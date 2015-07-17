@@ -1,0 +1,11 @@
+#!/usr/bin/python
+
+import argparse
+
+if __name__ ==  '__main__':
+    parser = argparse.ArgumentParser('simulation')
+    parser.add_argument('-l', dest='log', action='store_true',
+                        help='Write to a log file')
+    args = parser.parse_args()
+    print args
+
