@@ -124,16 +124,39 @@ class Game(object):
 
     def process_event(self, event):
         if event.type == sdl.SDL_KEYDOWN:
-            self.key_down(event.key.keysym)
+            self.on_key_down(event.key.keysym)
+        if event.type == sdl.SDL_KEYUP:
+            self.on_key_up(event.key.keysym)
         if event.type == sdl.SDL_QUIT:
             self.exit_()
 
     def exit_(self):
         self.running = False
 
-    def key_down(self, keysym):
+    def on_key_down(self, keysym):
         if keysym.sym == sdl.SDLK_q:
             self.exit_()
+        if keysym.sym == sdl.SDLK_UP:
+            self.sim.agentBody.body.WakeUp()
+            self.sim.agentBody.deccelerate()
+
+        if keysym.sym == sdl.SDLK_DOWN:
+            self.sim.agentBody.accelerate()
+
+        if keysym.sym == sdl.SDLK_LEFT:
+            self.sim.agentBody.steerLeft()
+        if keysym.sym == sdl.SDLK_RIGHT:
+            self.sim.agentBody.steerRight()
+
+    def on_key_up(self, keysym):
+        if keysym.sym == sdl.SDLK_UP:
+            self.sim.agentBody.stopEngine()
+        if keysym.sym == sdl.SDLK_DOWN:
+            self.sim.agentBody.stopEngine()
+        if keysym.sym == sdl.SDLK_LEFT:
+            self.steeringAngle = 0
+        if keysym.sym == sdl.SDLK_RIGHT:
+            self.steeringAngle = 0
 
 if __name__ == '__main__':
     game = Game()
