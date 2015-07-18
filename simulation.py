@@ -5,6 +5,7 @@ except ImportError:
     import sys
     sys.stderr.write(msg.cant_import_box2d+msg.newline)
     sys.exit(1)
+from loader import MapLoader
 #-------------------------------------------------------------------------------
 TIME_STEP = 1.0/60.0
 VEL_ITER = 10
@@ -16,7 +17,7 @@ STEER_SPEED = 1.5
 SIDEWAYS_FRICTION_FORCE = 10
 HORSEPOWER = 40
 
-
+MAZE_FILENAME = "maze.bin"
 #-------------------------------------------------------------------------------
 # Main Simulation Object
 #-------------------------------------------------------------------------------
@@ -194,6 +195,24 @@ class Simulation(object):
         gravity = (0,0)
         doSleep = True
         self.world = b2.b2World(worldAABB, gravity, doSleep)
+        # Add maze
+        self.mapLoader = MapLoader()
+        self.mapLoader.load(MAZE_FILENAME)
+        scale = 1.
+#        trans = (-40, -40)
+        trans = (-40, -40)
+
+
+        for wall in self.mapLoader.walls:
+            for brick in wall:
+                brickBodyDef = b2.b2BodyDef()
+                brickBodyDef.position = (brick[0]*scale+trans[0],
+                                         brick[1]*scale+trans[1])
+                brickBody = self.world.CreateBody(brickBodyDef)
+                brickShapeDef = b2.b2PolygonDef()
+                brickShapeDef.SetAsBox(0.5*scale, 0.5*scale)
+                brickBody.CreateShape(brickShapeDef)
+
         # Add ground
         groundBodyDef = b2.b2BodyDef()
         groundBodyDef.position = (0,-9)
