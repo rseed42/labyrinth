@@ -90,20 +90,24 @@ class Game(object):
         gl.glVertex2f(*self.space[0])
         gl.glEnd()
         # Draw ground body
-        gl.glColor3f(.75,0,0)
-        ground = self.sim.groundBody
-        groundShape = ground.shapeList[0]
-        gl.glBegin(gl.GL_LINE_STRIP)
-        for v in groundShape.vertices:
-            gl.glVertex2f(*ground.GetWorldPoint(v))
-        gl.glVertex2f(*ground.GetWorldPoint(groundShape.vertices[0]))
-        gl.glEnd()
+#        gl.glColor3f(1,0,0)
+#        ground = self.sim.groundBody
+#        groundShape = ground.shapeList[0]
+#        gl.glBegin(gl.GL_LINE_STRIP)
+#        for v in groundShape.vertices:
+#            gl.glVertex2f(*ground.GetWorldPoint(v))
+#        gl.glVertex2f(*ground.GetWorldPoint(groundShape.vertices[0]))
+#        gl.glEnd()
         # Draw stuff here. In principle we should already have the shapes in
         # a game object
-        gl.glColor3f(1,1,1)
+
         for body in self.sim.world.GetBodyList():
             # The body is a static shape
-            if body.GetMass() == 0: continue
+            if len(body.shapeList)== 0: continue
+            if body.GetMass() == 0:
+                gl.glColor3f(0,0,1)
+            else:
+                gl.glColor3f(1,1,1)
             shape = body.shapeList[0]
             gl.glBegin(gl.GL_LINE_STRIP)
             for v in shape.vertices:
