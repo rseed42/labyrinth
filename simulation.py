@@ -9,9 +9,116 @@ except ImportError:
 TIME_STEP = 1.0/60.0
 VEL_ITER = 10
 POS_ITER = 8
+CAR_STARTING_POS = b2.b2Vec2(0,0)
 #-------------------------------------------------------------------------------
 # Main Simulation Object
 #-------------------------------------------------------------------------------
+class AgentBody(object):
+    def __init__(self, world):
+        bodyDef = b2.b2BodyDef()
+        bodyDef.linearDamping = 1;
+        bodyDef.angularDamping = 1;
+        bodyDef.position = CAR_STARTING_POS
+        body = world.CreateBody(bodyDef)
+        body.SetMassFromShapes()
+
+        leftRearWheelPosition = b2.b2Vec2(-1.5,1.90)
+        rightRearWheelPosition = b2.b2Vec2(1.5,1.9)
+        leftFrontWheelPosition = b2.b2Vec2(-1.5,-1.9)
+        rightFrontWheelPosition = b2.b2Vec2(1.5,-1.9)
+
+        leftWheelDef = b2.b2BodyDef();
+        leftWheelDef.position = CAR_STARTING_POS
+        leftWheelDef.position.add_vector(leftFrontWheelPosition)
+        leftWheel = world.CreateBody(leftWheelDef)
+
+        rightWheelDef = b2.b2BodyDef()
+        rightWheelDef.position = CAR_STARTING_POS
+        rightWheelDef.position.add_vector(rightFrontWheelPosition)
+        rightWheel = world.CreateBody(rightWheelDef)
+
+        leftRearWheelDef = b2.b2BodyDef()
+        leftRearWheelDef.position = CAR_STARTING_POS
+        leftRearWheelDef.position.add_vector(leftRearWheelPosition)
+        leftRearWheel = world.CreateBody(leftRearWheelDef)
+
+        rightRearWheelDef = b2.b2BodyDef()
+        rightRearWheelDef.position = CAR_STARTING_POS
+        rightRearWheelDef.position.add_vector(rightRearWheelPosition)
+        rightRearWheel = world.CreateBody(rightRearWheelDef)
+
+        # Shapes
+        boxDef = b2.b2PolygonDef()
+        boxDef.SetAsBox(1.5,2.5)
+        boxDef.density = 1
+        body.CreateShape(boxDef)
+
+        # Left Wheel shape
+        leftWheelShapeDef = b2.b2PolygonDef()
+        leftWheelShapeDef.SetAsBox(0.2,0.5)
+        leftWheelShapeDef.density = 1
+        leftWheel.CreateShape(leftWheelShapeDef)
+
+        # Right Wheel shape
+        rightWheelShapeDef = b2.b2PolygonDef()
+        rightWheelShapeDef.SetAsBox(0.2,0.5)
+        rightWheelShapeDef.density = 1
+        rightWheel.CreateShape(rightWheelShapeDef)
+
+        # Left Wheel shape
+        leftRearWheelShapeDef = b2.b2PolygonDef()
+        leftRearWheelShapeDef.SetAsBox(0.2,0.5)
+        leftRearWheelShapeDef.density = 1
+        leftRearWheel.CreateShape(leftRearWheelShapeDef)
+
+        # Right Wheel shape
+        rightRearWheelShapeDef = b2.b2PolygonDef()
+        rightRearWheelShapeDef.SetAsBox(0.2,0.5)
+        rightRearWheelShapeDef.density = 1
+        rightRearWheel.CreateShape(rightRearWheelShapeDef)
+
+        body.SetMassFromShapes()
+        leftWheel.SetMassFromShapes()
+        rightWheel.SetMassFromShapes()
+        leftRearWheel.SetMassFromShapes()
+        rightRearWheel.SetMassFromShapes()
+
+        leftJointDef = b2.b2RevoluteJointDef()
+        leftJointDef.Initialize(body, leftWheel, leftWheel.GetWorldCenter())
+        leftJointDef.enableMotor = True
+        leftJointDef.maxMotorTorque = 100
+
+        rightJointDef = b2.b2RevoluteJointDef()
+        rightJointDef.Initialize(body, rightWheel, rightWheel.GetWorldCenter())
+        rightJointDef.enableMotor = True
+        rightJointDef.maxMotorTorque = 100
+
+#        leftJoint = b2.b2RevoluteJoint(world.CreateJoint(leftJointDef))
+        leftJoint = world.CreateJoint(leftJointDef)
+#        rightJoint = b2.b2RevoluteJoint(world.CreateJoint(rightJointDef))
+        rightJoint = world.CreateJoint(rightJointDef)
+
+        leftRearJointDef = b2.b2PrismaticJointDef()
+        leftRearJointDef.Initialize(body,
+                                    leftRearWheel,
+                                    leftRearWheel.GetWorldCenter(),
+                                    b2.b2Vec2(1,0))
+        leftRearJointDef.enableLimit = True
+        leftRearJointDef.lowerTranslation = leftRearJointDef.upperTranslation = 0
+
+        rightRearJointDef = b2.b2PrismaticJointDef()
+        rightRearJointDef.Initialize(body,
+                                     rightRearWheel,
+                                     rightRearWheel.GetWorldCenter(),
+                                     b2.b2Vec2(1,0))
+        rightRearJointDef.enableLimit = True
+        rightRearJointDef.lowerTranslation = 0
+        rightRearJointDef.upperTranslation = 0
+
+        world.CreateJoint(leftRearJointDef)
+        world.CreateJoint(rightRearJointDef)
+
+
 class Simulation(object):
     def __init__(self):
         # Non-interactive simulation:
@@ -20,42 +127,42 @@ class Simulation(object):
         worldAABB = b2.b2AABB()
         worldAABB.lowerBound = (-10, -10)
         worldAABB.upperBound = (10, 10)
-        gravity = (0,-10)
+        gravity = (0,0)
         doSleep = True
         self.world = b2.b2World(worldAABB, gravity, doSleep)
         # Add ground
-        groundBodyDef = b2.b2BodyDef()
-        groundBodyDef.position = (0,-9)
-        self.groundBody = self.world.CreateBody(groundBodyDef)
-        groundShapeDef = b2.b2PolygonDef()
-        groundShapeDef.SetAsBox(8, 0.25)
-        self.groundBody.CreateShape(groundShapeDef)
-        self.groundBody.angle = 8*(b2.b2_pi/180)
-        # Static shapes
-        obstacleBodyDef = b2.b2BodyDef()
-        obstacleBodyDef.position = (0,4)
-        obstacleBody = self.world.CreateBody(obstacleBodyDef)
-        obstacleShapeDef = b2.b2PolygonDef()
-        verts = ((-5,-0.2), (1,-0.2), (3,3), (2.8,3.3), (2, 1.8), (-5,0.2))
-        obstacleShapeDef.setVertices(verts)
-#        obstacleShapeDef.SetAsBox(6, 0.25)
-        obstacleBody.CreateShape(obstacleShapeDef)
-#        obstacleBody.angle = -3*(b2.b2_pi/180)
+#        groundBodyDef = b2.b2BodyDef()
+#        groundBodyDef.position = (0,-9)
+#        self.groundBody = self.world.CreateBody(groundBodyDef)
+#        groundShapeDef = b2.b2PolygonDef()
+#        groundShapeDef.SetAsBox(8, 0.25)
+#        self.groundBody.CreateShape(groundShapeDef)
+#        self.groundBody.angle = 8*(b2.b2_pi/180)
+#        # Static shapes
+#        obstacleBodyDef = b2.b2BodyDef()
+#        obstacleBodyDef.position = (0,4)
+#        obstacleBody = self.world.CreateBody(obstacleBodyDef)
+#        obstacleShapeDef = b2.b2PolygonDef()
+#        verts = ((-5,-0.2), (1,-0.2), (3,3), (2.8,3.3), (2, 1.8), (-5,0.2))
+#        obstacleShapeDef.setVertices(verts)
+#        obstacleBody.CreateShape(obstacleShapeDef)
 
         # Add dynamic bodies
-        bodyDef = b2.b2BodyDef()
-        bodyDef.position = (0,0)
+#        bodyDef = b2.b2BodyDef()
+#        bodyDef.position = (0,0)
+#
+#        self.body = self.world.CreateBody(bodyDef)
+#        shapeDef = b2.b2PolygonDef()
+#        shapeDef.SetAsBox(0.5,0.5)
+#        shapeDef.density = 1
+#        shapeDef.friction = 0.08
+#
+#        self.body.CreateShape(shapeDef)
+#        self.body.SetMassFromShapes()
+#        self.body.SetLinearVelocity((2, 10))
+#        self.body.SetAngularVelocity(3)
 
-        self.body = self.world.CreateBody(bodyDef)
-        shapeDef = b2.b2PolygonDef()
-        shapeDef.SetAsBox(0.5,0.5)
-        shapeDef.density = 1
-        shapeDef.friction = 0.08
-
-        self.body.CreateShape(shapeDef)
-        self.body.SetMassFromShapes()
-        self.body.SetLinearVelocity((2, 10))
-        self.body.SetAngularVelocity(3)
+        self.car = AgentBody(self.world)
 
     def start(self):
         """ Used in non-interactive simulations"""
