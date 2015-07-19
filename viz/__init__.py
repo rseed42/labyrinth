@@ -10,6 +10,7 @@ except ImportError:
     sys.exit(1)
 try:
     import OpenGL.GL as gl
+    import OpenGL.GLU as glu
     import OpenGL.arrays.vbo as glvbo
 except ImportError:
     sys.stderr.write(msg.import_opengl_fail+msg.newline)
@@ -46,6 +47,7 @@ class Visualization(object):
         # Rendering
         self.mazeWallColor = None
         self.agentFov = None
+        self.worldView = False
 
     def configure(self, cfg_file):
         import json
@@ -62,9 +64,6 @@ class Visualization(object):
         gl.glClearDepth(1.0)
         gl.glEnable(gl.GL_TEXTURE_2D)
         gl.glViewport(0,0,self.cfg.window.width, self.cfg.window.height)
-        gl.glOrtho(0, 101, 0, 101,-1, 1)
-        gl.glMatrixMode(gl.GL_PROJECTION)
-        gl.glLoadIdentity()
         # Load static map for the maze walls
         self.wallTriangles = self.sim.wmap.generateWallTriangles()
         self.vboMazeWalls = glvbo.VBO(self.wallTriangles)
@@ -108,10 +107,28 @@ class Visualization(object):
 
     def render(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        gl.glLoadIdentity()
+        # Global world view
+        if self.worldView:
+            aspect = float(800)/600
+            gl.glMatrixMode(gl.GL_PROJECTION)
+            gl.glLoadIdentity()
+            gl.glOrtho(0, 101*aspect, 0, 101,-1, 1)
+        # Agent View
+        else:
+            gl.glMatrixMode(gl.GL_PROJECTION)
+            gl.glLoadIdentity()
+            gl.glOrtho(0, 40, 0, 30,-1, 1)
+            gl.glMatrixMode(gl.GL_MODELVIEW)
+            gl.glLoadIdentity()
+            user = self.sim.user
+            translation = user.body.transform.position
+            sensorVerts = user.body.fixtures[1].shape.vertices
+            gl.glTranslatef(sensorVerts[0][0],-(16-0.5*30),0)
+            gl.glRotatef((180/np.pi)*user.body.transform.angle, 0, 0, -1)
+            gl.glTranslatef(-translation.x,-translation.y,0)
 
-        gl.glColor3f(*self.mazeWallColor)
         # Load static buffers
+        gl.glColor3f(*self.mazeWallColor)
         try:
             self.vboMazeWalls.bind()
             try:
@@ -128,7 +145,7 @@ class Visualization(object):
 
         # The dynamics body are rendered in a more simple way
         for name, agent in self.sim.getAgents().items():
-            agent.draw(gl)
+            agent.draw(gl, self.worldView)
 
         sdl.SDL_GL_SwapWindow(self.window)
 
@@ -156,6 +173,9 @@ class Visualization(object):
             self.runSimulation = False
             self.sim.reset()
             self.runSimulation = True
+        if keysym.sym == sdl.SDLK_g:
+            self.worldView = not self.worldView
+
         # Control agent
         if keysym.sym == sdl.SDLK_w:
             self.sim.userAccelerate()

@@ -202,7 +202,7 @@ class Agent(object):
         gl.glEnd()
 
 
-    def draw(self, gl):
+    def draw(self, gl, worldView):
         # Display the chassis
         self.drawBox(gl, self.colorChassis, self.colorBorder,
              map(self.body.GetWorldPoint, self.body.fixtures[0].shape.vertices))
@@ -220,6 +220,8 @@ class Agent(object):
                  self.rearRightWheel.fixtures[0].shape.vertices))
 
         # Draw sensor field
+        if not worldView:
+            return
         self.drawBox(gl, self.colorChassis, self.colorBorder,
              map(self.body.GetWorldPoint,
                  self.body.fixtures[1].shape.vertices))

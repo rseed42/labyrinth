@@ -1,5 +1,6 @@
 {
-    "window": { "width" : 600, "height": 600, "title": "Interactive Visualization"},
+    "window_": { "width" : 600, "height": 600, "title": "Interactive Visualization"},
+    "window": { "width" : 800, "height": 600, "title": "Interactive Visualization"},
     "fps": 60,
     "gl":{},
     "color": {"background" : [0,0,0,0],
