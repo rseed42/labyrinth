@@ -10,6 +10,7 @@ except ImportError:
     sys.exit(1)
 try:
     import OpenGL.GL as gl
+    import OpenGL.arrays.vbo as glvbo
 except ImportError:
     sys.stderr.write(msg.import_opengl_fail+msg.newline)
     sys.exit(1)
@@ -43,14 +44,7 @@ class Visualization(object):
         self.sim = simulation
         self.runSimulation = True
         # Rendering
-        self.worldBorderColor = None
-#        aabb = self.sim.world.GetWorldAABB()
-#        lower, upper = aabb.lowerBound, aabb.upperBound
-#        self.space = (lower.tuple(),(upper.x,lower.y),
-#                      upper.tuple(), (lower.x, upper.y))
-#        # For the orthographic projecion
-#        self.area = np.array([lower.x, upper.x, lower.y, upper.y])
-#        self.area += WORLD_BORDERS
+        self.mazeWallColor = None
 
     def configure(self, cfg_file):
         import json
@@ -59,16 +53,19 @@ class Visualization(object):
         fp.close()
         # Set up configuration (override initialized vars if necessary)
         self.delay_time = 1000./self.cfg.fps
-        self.worldBorderColor = tuple(self.cfg.color.worldBorder)
+        self.mazeWallColor = tuple(self.cfg.color.mazeWall)
 
     def init_gl(self):
         gl.glClearColor(*self.cfg.color.background)
         gl.glClearDepth(1.0)
         gl.glEnable(gl.GL_TEXTURE_2D)
         gl.glViewport(0,0,self.cfg.window.width, self.cfg.window.height)
-#        gl.glOrtho(self.area[0], self.area[1], self.area[2], self.area[3],-1, 1)
+        gl.glOrtho(0, 101, 0, 101,-1, 1)
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
+        # Load static map for the maze walls
+        self.wallTriangles = self.sim.wmap.generateWallTriangles()
+        self.vboMazeWalls = glvbo.VBO(self.wallTriangles)
 
     def initialize(self):
         if sdl.SDL_Init(sdl.SDL_INIT_EVERYTHING) < 0:
@@ -110,28 +107,24 @@ class Visualization(object):
     def render(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glLoadIdentity()
-        # Drawr world border
-#        gl.glColor3f(*BORDER_COLOR)
-#        gl.glBegin(gl.GL_LINE_STRIP)
-#        for v in self.space:
-#            gl.glVertex2f(*v)
-#        gl.glVertex2f(*self.space[0])
-#        gl.glEnd()
-#
-#        for body in self.sim.world.GetBodyList():
-#            # The body is a static shape
-#            if len(body.shapeList)== 0: continue
-#            if body.GetMass() == 0:
-#                gl.glColor3f(0,0,1)
-#            else:
-#                gl.glColor3f(1,1,1)
-#            shape = body.shapeList[0]
-#            gl.glBegin(gl.GL_LINE_STRIP)
-#            for v in shape.vertices:
-#                gl.glVertex2f(*body.GetWorldPoint(v))
-#            gl.glVertex2f(*body.GetWorldPoint(shape.vertices[0]))
-#            gl.glEnd()
-        # Double buffering
+
+        gl.glColor3f(*self.mazeWallColor)
+        # Load static buffers
+        try:
+            self.vboMazeWalls.bind()
+            try:
+                gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+                gl.glVertexPointerf(self.vboMazeWalls)
+                gl.glDrawArrays(gl.GL_TRIANGLES, 0,
+                                self.wallTriangles.size)
+            finally:
+                self.vboMazeWalls.unbind()
+                gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+        finally:
+            # We can also use shaders, etc.
+            pass
+
+
         sdl.SDL_GL_SwapWindow(self.window)
 
     def cleanup(self):

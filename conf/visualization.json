@@ -3,5 +3,5 @@
     "fps": 60,
     "gl":{},
     "color": {"background" : [0,0,0,0],
-              "worldBorder": [0.75,0.75,0.75]}
+              "mazeWall": [0,0.15,1]}
 }

@@ -5,10 +5,14 @@ from numpy.random import random_integers as rand
 import matplotlib.pyplot as pyplot
 
 
-WIDTH = 80
-HEIGHT= 80
-COMPLEXITY = 0.1
-DENSITY = 0.005
+WIDTH = 100
+HEIGHT= 100
+COMPLEXITY = 0.01
+DENSITY = 0.025
+
+# 0 - free
+# 1 - wall
+# 2 - ?
 
 def maze(width=81, height=51, complexity=.75, density=.75):
     # Only odd shapes
@@ -37,14 +41,14 @@ def maze(width=81, height=51, complexity=.75, density=.75):
                     Z[y_, x_] = 1
                     Z[y_ + (y - y_) // 2, x_ + (x - x_) // 2] = 1
                     x, y = x_, y_
-    return Z
-
-pyplot.figure(figsize=(10, 5))
+    return Z.astype(numpy.int32)
 
 z = maze(WIDTH, HEIGHT, COMPLEXITY, DENSITY)
-
+# Add more features
+# Show
+pyplot.figure(figsize=(10, 5))
 pyplot.imshow(z,cmap=pyplot.cm.binary, interpolation='nearest')
 pyplot.xticks([]), pyplot.yticks([])
 pyplot.show()
-
+# Save
 numpy.save(file('maze.bin', 'wb'), z)
