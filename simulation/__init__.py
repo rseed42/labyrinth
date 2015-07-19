@@ -251,7 +251,6 @@ class Simulation(object):
 
     def start(self):
         """ Used in non-interactive simulations"""
-        print msg.starting_simulation
         self.running = True
         self.run()
 

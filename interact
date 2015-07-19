@@ -18,7 +18,7 @@ if __name__ ==  '__main__':
     # Create and prepare the simulation
     sim = simulation.Simulation()
     if not sim.load():
-        sys.stderr.write(msg.simulation_load_fail + msg.newline)
+        sys.stderr.write(msg.sim_load_fail + msg.newline)
         sys.exit(1)
     # Start the visualisation
     viz = viz.Visualization(sim)

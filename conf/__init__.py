@@ -6,8 +6,8 @@ class msg(object):
     import_numpy_fail = "Can't import numpy"
     import_bunch_fail = "Can't import bunch"
 
-    simulation_start = "----- Starting simulation -----"
-    simulation_init_fail = "Could not initialize the simulation"
-    simulation_load_fail = "Could not load simulation data"
+    sim_start = "----- Starting simulation -----"
+    sim_init_fail = "Could not initialize the simulation"
+    sim_load_fail = "Could not load simulation data"
 
     viz_gl_init_fail = "Could not initialize opengl context"
