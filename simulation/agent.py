@@ -212,16 +212,15 @@ class Agent(object):
         self.drawBox(gl, self.colorChassis, self.colorBorder,
              map(self.frontRightWheel.GetWorldPoint,
                  self.frontRightWheel.fixtures[0].shape.vertices))
+        # Draw sensor field and rear wheels if not in agent view
+        if not worldView:
+            return
         self.drawBox(gl, self.colorChassis, self.colorBorder,
              map(self.rearLeftWheel.GetWorldPoint,
                  self.rearLeftWheel.fixtures[0].shape.vertices))
         self.drawBox(gl, self.colorChassis, self.colorBorder,
              map(self.rearRightWheel.GetWorldPoint,
                  self.rearRightWheel.fixtures[0].shape.vertices))
-
-        # Draw sensor field
-        if not worldView:
-            return
         self.drawBox(gl, self.colorChassis, self.colorBorder,
              map(self.body.GetWorldPoint,
                  self.body.fixtures[1].shape.vertices))
