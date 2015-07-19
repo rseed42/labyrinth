@@ -1,9 +1,9 @@
-import msg
+from conf import msg
 try:
     import Box2D as b2
 except ImportError:
     import sys
-    sys.stderr.write(msg.cant_import_box2d+msg.newline)
+    sys.stderr.write(msg.import_box2d_fail+msg.newline)
     sys.exit(1)
 from loader import MapLoader
 #-------------------------------------------------------------------------------
@@ -243,6 +243,11 @@ class Simulation(object):
 #        self.body.SetAngularVelocity(3)
 
         self.agentBody = AgentBody(self.world)
+
+    def load(self):
+        pass
+        return True
+
 
     def start(self):
         """ Used in non-interactive simulations"""

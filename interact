@@ -1,0 +1,19 @@
+#!/usr/bin/python
+import argparse
+import sys
+import simulation
+import viz
+from conf import msg
+
+if __name__ ==  '__main__':
+    parser = argparse.ArgumentParser('ineract')
+    parser.add_argument('-l', dest='log', action='store_true',
+                        help='Write to a log file')
+    args = parser.parse_args()
+    # Create and prepare the simulation
+    sim = simulation.Simulation()
+    if not sim.load():
+        sys.stderr.write(msg.simulation_load_fail + msg.newline)
+        sys.exit(1)
+    # Start the visualisation
+    viz = viz.Visualization(sim)
