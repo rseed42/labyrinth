@@ -58,6 +58,7 @@ class Visualization(object):
         self.delay_time = 1000./self.cfg.fps
         self.mazeWallColor = tuple(self.cfg.color.mazeWall)
         self.agentFov = self.cfg.agentFov
+        self.worldView = self.cfg.worldView
 
     def init_gl(self):
         gl.glClearColor(*self.cfg.color.background)
@@ -112,7 +113,7 @@ class Visualization(object):
             aspect = float(800)/600
             gl.glMatrixMode(gl.GL_PROJECTION)
             gl.glLoadIdentity()
-            gl.glOrtho(0, 101*aspect, 0, 101,-1, 1)
+            gl.glOrtho(0, 201*aspect, 0, 201,-1, 1)
         # Agent View
         else:
             gl.glMatrixMode(gl.GL_PROJECTION)

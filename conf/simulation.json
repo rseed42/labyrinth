@@ -2,6 +2,6 @@
     "solver" : {"timestep" : 0.016666666666666666,
                 "velocityIterations" : 10,
                 "positionIterations": 8},
-    "world" : { "lowerBound" : [0, 0], "upperBound" : [101, 101]},
+    "world" : { "lowerBound" : [0, 0], "upperBound" : [201, 201]},
     "worldmap" : { "filename" : "data/map.json" }
 }

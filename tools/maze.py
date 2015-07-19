@@ -5,10 +5,10 @@ from numpy.random import random_integers as rand
 import matplotlib.pyplot as pyplot
 
 
-WIDTH = 100
-HEIGHT= 100
+WIDTH = 200
+HEIGHT= 200
 COMPLEXITY = 0.01
-DENSITY = 0.025
+DENSITY = 0.01
 
 # 0 - free
 # 1 - wall
