@@ -42,6 +42,8 @@ class Visualization(object):
         self.frameTime = 0
         self.sim = simulation
         self.runSimulation = True
+        # Rendering
+        self.worldBorderColor = None
 #        aabb = self.sim.world.GetWorldAABB()
 #        lower, upper = aabb.lowerBound, aabb.upperBound
 #        self.space = (lower.tuple(),(upper.x,lower.y),
@@ -57,6 +59,7 @@ class Visualization(object):
         fp.close()
         # Set up configuration (override initialized vars if necessary)
         self.delay_time = 1000./self.cfg.fps
+        self.worldBorderColor = tuple(self.cfg.color.worldBorder)
 
     def init_gl(self):
         gl.glClearColor(*self.cfg.color.background)

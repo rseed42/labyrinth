@@ -3,5 +3,5 @@
     "fps": 60,
     "gl":{},
     "color": {"background" : [0,0,0,0],
-              "world_border": [0.75,0.75,0.75]}
+              "worldBorder": [0.75,0.75,0.75]}
 }
