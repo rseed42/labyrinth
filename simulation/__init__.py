@@ -76,17 +76,30 @@ class Simulation(object):
                         self.velocityIterations,
                         self.positionIterations)
         self.user.update()
-#        print self.body.position, self.body.angle, self.body.linearVelocity
-#        pass
 
     def userAccelerate(self):
         self.user.accelerate()
 
-    def userBreak(self):
-        self.user.break_()
+    def userReleaseAccelerator(self):
+        self.user.releaseAccelerator()
 
-    def userTurnLeft(self):
-        self.user.turnLeft()
+    def userReverse(self):
+        self.user.reverse()
 
-    def userTurnRight(self):
-        self.user.turnRight()
+    def userReleaseReverse(self):
+        self.user.releaseReverse()
+
+    def userBrake(self):
+        self.user.brake()
+
+    def userReleaseBrake(self):
+        self.user.releaseBrake()
+
+    def userSteerLeft(self):
+        self.user.steerLeft()
+
+    def userSteerRight(self):
+        self.user.steerRight()
+
+    def userReleaseSteering(self):
+        self.user.releaseSteering()

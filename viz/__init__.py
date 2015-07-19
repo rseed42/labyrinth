@@ -138,8 +138,8 @@ class Visualization(object):
     def process_event(self, event):
         if event.type == sdl.SDL_KEYDOWN:
             self.on_key_down(event.key.keysym)
-#        if event.type == sdl.SDL_KEYUP:
-#            self.on_key_up(event.key.keysym)
+        if event.type == sdl.SDL_KEYUP:
+            self.on_key_up(event.key.keysym)
         if event.type == sdl.SDL_QUIT:
             self.exit_()
 
@@ -149,24 +149,25 @@ class Visualization(object):
     def on_key_down(self, keysym):
         if keysym.sym == sdl.SDLK_q:
             self.exit_()
-#        if keysym.sym == sdl.SDLK_UP:
-#            self.sim.agentBody.body.WakeUp()
-#            self.sim.agentBody.deccelerate()
-#
-#        if keysym.sym == sdl.SDLK_DOWN:
-#            self.sim.agentBody.accelerate()
-#
-#        if keysym.sym == sdl.SDLK_LEFT:
-#            self.sim.agentBody.steerLeft()
-#        if keysym.sym == sdl.SDLK_RIGHT:
-#            self.sim.agentBody.steerRight()
-#
-#    def on_key_up(self, keysym):
-#        if keysym.sym == sdl.SDLK_UP:
-#            self.sim.agentBody.stopEngine()
-#        if keysym.sym == sdl.SDLK_DOWN:
-#            self.sim.agentBody.stopEngine()
-#        if keysym.sym == sdl.SDLK_LEFT:
-#            self.steeringAngle = 0
-#        if keysym.sym == sdl.SDLK_RIGHT:
-#            self.steeringAngle = 0
+        if keysym.sym == sdl.SDLK_w:
+            self.sim.userAccelerate()
+        if keysym.sym == sdl.SDLK_k:
+            self.sim.userReverse()
+        if keysym.sym == sdl.SDLK_s:
+            self.sim.userBrake()
+        if keysym.sym == sdl.SDLK_a:
+            self.sim.userSteerLeft()
+        if keysym.sym == sdl.SDLK_d:
+            self.sim.userSteerRight()
+
+    def on_key_up(self, keysym):
+        if keysym.sym == sdl.SDLK_w:
+            self.sim.userReleaseAccelerator()
+        if keysym.sym == sdl.SDLK_k:
+            self.sim.userReleaseReverse()
+        if keysym.sym == sdl.SDLK_s:
+            self.sim.userReleaseBrake()
+        if keysym.sym == sdl.SDLK_a:
+            self.sim.userReleaseSteering()
+        if keysym.sym == sdl.SDLK_d:
+            self.sim.userReleaseSteering()
