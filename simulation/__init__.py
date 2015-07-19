@@ -44,17 +44,20 @@ class Simulation(object):
 
     def load(self):
         # Build the world
-#        worldAABB = b2.b2AABB()
-#        worldAABB.lowerBound = self.worldLowerBound
-#        worldAABB.upperBound = self.worldUpperBound
-#        self.world = b2.b2World(worldAABB, (0,0), True)
         self.world = b2.b2World((0,0))
         # Load the map and populate the world
         self.wmap = worldmap.WorldMap(self.cfg.worldmap.filename, self.world)
         self.wmap.load()
         self.user = self.wmap['user']
-
         return True
+
+    def reset(self):
+        self.running = False
+        self.wmap = None
+        self.user = None
+        if not self.load():
+            sys.stderr.write(msg.sim_load_fail+msg.newline)
+
 
     def getAgents(self):
         return self.wmap

@@ -97,7 +97,7 @@ class Visualization(object):
             # Only run the simulation if allowed
             if self.runSimulation:
                 self.sim.step()
-            self.render()
+                self.render()
             self.frameTime = sdl.SDL_GetTicks() - self.frameStart
             if self.frameTime < self.delay_time:
                 sdl.SDL_Delay(int(self.delay_time - self.frameTime))
@@ -147,8 +147,14 @@ class Visualization(object):
         self.running = False
 
     def on_key_down(self, keysym):
+        # Control simulation
         if keysym.sym == sdl.SDLK_q:
             self.exit_()
+        if keysym.sym == sdl.SDLK_r:
+            self.runSimulation = False
+            self.sim.reset()
+            self.runSimulation = True
+        # Control agent
         if keysym.sym == sdl.SDLK_w:
             self.sim.userAccelerate()
         if keysym.sym == sdl.SDLK_k:
