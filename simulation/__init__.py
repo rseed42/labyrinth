@@ -55,6 +55,9 @@ class Simulation(object):
 
         return True
 
+    def getAgents(self):
+        return self.wmap
+
     def start(self):
         """ Used in non-interactive simulations"""
         self.running = True

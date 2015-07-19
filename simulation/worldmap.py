@@ -14,13 +14,12 @@ try:
 except ImportError:
     sys.stderr.write(msg.import_numpy_fail+msg.newline)
     sys.exit(1)
-
+import agent
 #-------------------------------------------------------------------------------
 # Contains the information needed to set up the simulation
 #-------------------------------------------------------------------------------
-#class WorldMap(object):
 class WorldMap(dict):
-    """ Contains all the simulation objects
+    """ Contains all the simulation objects. As a dictionary, contains the agents
     """
     def __init__(self, filename, world):
         # Physical Dimensions
@@ -37,6 +36,11 @@ class WorldMap(dict):
         # Load some world properties
         self.width = self.cfg.width
         self.height = self.cfg.height
+        # Static objects
+        self.loadStaticObjects()
+        self.loadDynamicObjects()
+
+    def loadStaticObjects(self):
         # Load maze
         fp = file(self.cfg.mazefile, 'rb')
         # Load the maze file and invert it to correspond to the simulation's
@@ -64,6 +68,9 @@ class WorldMap(dict):
                                             density=0)
 
     def generateWallTriangles(self):
+        """ This is a separate functions, since we might not always use the
+            visualization and simulate interactively.
+        """
         triangles = []
         tileSize = float(self.width)/(self.maze.shape[0])
         for i in xrange(self.maze.shape[0]):
@@ -76,6 +83,23 @@ class WorldMap(dict):
                     triangles.append(triangle1)
                     triangles.append(triangle2)
         return np.array(triangles, dtype=np.float32)
+
+
+    def loadDynamicObjects(self):
+        """ Objects which are not static
+        """
+        self.loadAgents()
+
+    def loadAgents(self):
+        self.loadUserAgent()
+
+    def loadUserAgent(self):
+        if not self.cfg.user: return
+        # Construct the agent
+        self["user"] = agent.Agent()
+        self["user"].construct(self.cfg.user, self.world)
+        # Set up controller (later)
+
 
     def test(self):
         pass

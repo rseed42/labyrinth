@@ -124,6 +124,9 @@ class Visualization(object):
             # We can also use shaders, etc.
             pass
 
+        # The dynamics body are rendered in a more simple way
+        for name, agent in self.sim.getAgents().items():
+            agent.draw(gl)
 
         sdl.SDL_GL_SwapWindow(self.window)
 

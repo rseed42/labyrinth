@@ -1,3 +1,9 @@
+from conf import msg
+try:
+    import Box2D as b2
+except ImportError:
+    sys.stderr.write(msg.import_box2d_fail+msg.newline)
+    sys.exit(1)
 #CAR_STARTING_POS = b2.b2Vec2(0,0)
 #
 #MAX_STEER_ANGLE = b2.b2_pi/3
@@ -10,82 +16,55 @@
 # Main Simulation Object
 #-------------------------------------------------------------------------------
 class Agent(object):
-#    def __init__(self, world):
     def __init__(self):
-        pass
-#        self.engineSpeed = 0
-#        self.steeringAngle = 0
-#
-#        bodyDef = b2.b2BodyDef()
-#        bodyDef.linearDamping = 1;
-#        bodyDef.angularDamping = 1;
-#        bodyDef.position = CAR_STARTING_POS
-#        self.body = world.CreateBody(bodyDef)
-#        self.body.SetMassFromShapes()
-#
-#        leftRearWheelPosition = b2.b2Vec2(-1.5,1.90)
-#        rightRearWheelPosition = b2.b2Vec2(1.5,1.9)
-#        leftFrontWheelPosition = b2.b2Vec2(-1.5,-1.9)
-#        rightFrontWheelPosition = b2.b2Vec2(1.5,-1.9)
-#
-#        leftWheelDef = b2.b2BodyDef();
-#        leftWheelDef.position = CAR_STARTING_POS
-#        leftWheelDef.position.add_vector(leftFrontWheelPosition)
-#        self.leftWheel = world.CreateBody(leftWheelDef)
-#
-#        rightWheelDef = b2.b2BodyDef()
-#        rightWheelDef.position = CAR_STARTING_POS
-#        rightWheelDef.position.add_vector(rightFrontWheelPosition)
-#        self.rightWheel = world.CreateBody(rightWheelDef)
+        # Control variables
+        self.engineSpeed = 0
+        self.steeringAngle = 0
+        self.colorChassis = None
+        self.colorBorder = None
 
+    def addWheel(self, world, carBody, carPos, cfg):
+        wheelDef = b2.b2BodyDef()
+        wheelDef.type = b2.b2_dynamicBody
+        wheelDef.position = b2.b2Vec2(carPos) + b2.b2Vec2(cfg.position)
+        wheel = world.CreateBody(wheelDef)
+        wheel.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+                                       friction=cfg.friction,
+                                       density=cfg.density)
+        return wheel
 
-#
-#        leftRearWheelDef = b2.b2BodyDef()
-#        leftRearWheelDef.position = CAR_STARTING_POS
-#        leftRearWheelDef.position.add_vector(leftRearWheelPosition)
-#        self.leftRearWheel = world.CreateBody(leftRearWheelDef)
-#
-#        rightRearWheelDef = b2.b2BodyDef()
-#        rightRearWheelDef.position = CAR_STARTING_POS
-#        rightRearWheelDef.position.add_vector(rightRearWheelPosition)
-#        self.rightRearWheel = world.CreateBody(rightRearWheelDef)
-#
-#        # Shapes
-#        boxDef = b2.b2PolygonDef()
-#        boxDef.SetAsBox(1.5,2.5)
-#        boxDef.density = 1
-#        self.body.CreateShape(boxDef)
-#
-#        # Left Wheel shape
-#        leftWheelShapeDef = b2.b2PolygonDef()
-#        leftWheelShapeDef.SetAsBox(0.2,0.5)
-#        leftWheelShapeDef.density = 1
-#        self.leftWheel.CreateShape(leftWheelShapeDef)
-#
-#        # Right Wheel shape
-#        rightWheelShapeDef = b2.b2PolygonDef()
-#        rightWheelShapeDef.SetAsBox(0.2,0.5)
-#        rightWheelShapeDef.density = 1
-#        self.rightWheel.CreateShape(rightWheelShapeDef)
-#
-#        # Left Wheel shape
-#        leftRearWheelShapeDef = b2.b2PolygonDef()
-#        leftRearWheelShapeDef.SetAsBox(0.2,0.5)
-#        leftRearWheelShapeDef.density = 1
-#        self.leftRearWheel.CreateShape(leftRearWheelShapeDef)
-#
-#        # Right Wheel shape
-#        rightRearWheelShapeDef = b2.b2PolygonDef()
-#        rightRearWheelShapeDef.SetAsBox(0.2,0.5)
-#        rightRearWheelShapeDef.density = 1
-#        self.rightRearWheel.CreateShape(rightRearWheelShapeDef)
-#
-#        self.body.SetMassFromShapes()
-#        self.leftWheel.SetMassFromShapes()
-#        self.rightWheel.SetMassFromShapes()
-#        self.leftRearWheel.SetMassFromShapes()
-#        self.rightRearWheel.SetMassFromShapes()
-#
+    def construct(self, cfg, world):
+        # Update config
+        self.colorChassis = cfg.color.chassis
+        self.colorBorder = cfg.color.border
+        # Agent body
+        bodyDef = b2.b2BodyDef()
+        bodyDef.type = b2.b2_dynamicBody
+        bodyDef.linearDamping = cfg.linearDamping
+        bodyDef.angularDamping = cfg.angularDamping
+        bodyDef.position = cfg.position
+        self.body = world.CreateBody(bodyDef)
+        self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+                                       friction=cfg.friction,
+                                       density=cfg.density)
+
+        self.frontLeftWheel = self.addWheel(world,
+                                            self.body,
+                                            cfg.position,
+                                            cfg.wheels.frontLeft)
+        self.frontRightWheel = self.addWheel(world,
+                                            self.body,
+                                            cfg.position,
+                                            cfg.wheels.frontRight)
+        self.rearLeftWheel = self.addWheel(world,
+                                            self.body,
+                                            cfg.position,
+                                            cfg.wheels.rearLeft)
+        self.rearRightWheel = self.addWheel(world,
+                                            self.body,
+                                            cfg.position,
+                                            cfg.wheels.rearRight)
+
 #        leftJointDef = b2.b2RevoluteJointDef()
 #        leftJointDef.Initialize(self.body,
 #                                self.leftWheel,
@@ -172,3 +151,23 @@ class Agent(object):
 #        rj = self.rightJoint.asRevoluteJoint()
 #        mspeed = self.steeringAngle - rj.GetJointAngle()
 #        rj.SetMotorSpeed(mspeed * STEER_SPEED)
+
+    def draw(self, gl):
+        gl.glColor3f(*self.colorChassis)
+        gl.glBegin(gl.GL_TRIANGLES)
+        vertices = self.body.fixtures[0].shape.vertices
+        for v in vertices[:3]:
+            gl.glVertex2f(*self.body.GetWorldPoint(v))
+        for v in vertices[2:]:
+            gl.glVertex2f(*self.body.GetWorldPoint(v))
+        gl.glVertex2f(*self.body.GetWorldPoint(vertices[0]))
+        gl.glEnd()
+
+        gl.glColor3f(*self.colorBorder)
+        gl.glBegin(gl.GL_LINE_STRIP)
+        for v in vertices:
+            gl.glVertex2f(*self.body.GetWorldPoint(v))
+        gl.glVertex2f(*self.body.GetWorldPoint(vertices[0]))
+        gl.glEnd()
+        #gl.glBegin(gl.GL_LINE_STRIP)
+        #gl.glEnd()
