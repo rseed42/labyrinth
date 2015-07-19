@@ -110,8 +110,22 @@ class Agent(object):
 #    def steerRight(self):
 #        self.steeringAngle = -MAX_STEER_ANGLE
 #
-#    def accelerate(self):
-#        self.engineSpeed = HORSEPOWER
+    def accelerate(self):
+        print "accelerate"
+        pass
+
+    def break_(self):
+        print "break"
+        pass
+
+    def turnLeft(self):
+        print "turnLeft"
+        pass
+
+    def turnRight(self):
+        print "turnRight"
+        pass
+
 #
 #    def deccelerate(self):
 #        self.engineSpeed = -HORSEPOWER
@@ -132,7 +146,8 @@ class Agent(object):
 #        body.SetLinearVelocity(sidewaysAxis)
 #
 #
-#    def update(self):
+    def update(self):
+        pass
 #        self.killOrthogonalVelocity(self.leftWheel)
 #        self.killOrthogonalVelocity(self.rightWheel)
 #        self.killOrthogonalVelocity(self.leftRearWheel)
@@ -152,22 +167,39 @@ class Agent(object):
 #        mspeed = self.steeringAngle - rj.GetJointAngle()
 #        rj.SetMotorSpeed(mspeed * STEER_SPEED)
 
-    def draw(self, gl):
+
+    def drawBox(self, gl, colFill, colBorder, verts):
+        """ Vertices are presupplied, in world coordinates
+        """
+        # Kinda inefficient, but we are not worried about performance yet
+        vertices = verts[:3] + verts[2:] + [verts[0]]
+        verticesBorder = [v for v in verts] + [verts[0]]
+        # Box
         gl.glColor3f(*self.colorChassis)
         gl.glBegin(gl.GL_TRIANGLES)
-        vertices = self.body.fixtures[0].shape.vertices
-        for v in vertices[:3]:
-            gl.glVertex2f(*self.body.GetWorldPoint(v))
-        for v in vertices[2:]:
-            gl.glVertex2f(*self.body.GetWorldPoint(v))
-        gl.glVertex2f(*self.body.GetWorldPoint(vertices[0]))
+        for v in vertices:
+            gl.glVertex2f(*v)
         gl.glEnd()
-
+        # Border
         gl.glColor3f(*self.colorBorder)
         gl.glBegin(gl.GL_LINE_STRIP)
-        for v in vertices:
-            gl.glVertex2f(*self.body.GetWorldPoint(v))
-        gl.glVertex2f(*self.body.GetWorldPoint(vertices[0]))
+        for v in verticesBorder:
+            gl.glVertex2f(*v)
         gl.glEnd()
-        #gl.glBegin(gl.GL_LINE_STRIP)
-        #gl.glEnd()
+
+    def draw(self, gl):
+        # Display the chassis
+        self.drawBox(gl, self.colorChassis, self.colorBorder,
+             map(self.body.GetWorldPoint, self.body.fixtures[0].shape.vertices))
+        self.drawBox(gl, self.colorChassis, self.colorBorder,
+             map(self.frontLeftWheel.GetWorldPoint,
+                 self.frontLeftWheel.fixtures[0].shape.vertices))
+        self.drawBox(gl, self.colorChassis, self.colorBorder,
+             map(self.frontRightWheel.GetWorldPoint,
+                 self.frontRightWheel.fixtures[0].shape.vertices))
+        self.drawBox(gl, self.colorChassis, self.colorBorder,
+             map(self.rearLeftWheel.GetWorldPoint,
+                 self.rearLeftWheel.fixtures[0].shape.vertices))
+        self.drawBox(gl, self.colorChassis, self.colorBorder,
+             map(self.rearRightWheel.GetWorldPoint,
+                 self.rearRightWheel.fixtures[0].shape.vertices))

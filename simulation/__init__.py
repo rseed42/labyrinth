@@ -25,6 +25,7 @@ class Simulation(object):
         self.worldLowerBound = None
         self.worldUpperBound = None
         self.wmap = None
+        self.user = None
 
     def configure(self, cfg_file):
         """ Configuration before the map is loaded
@@ -51,7 +52,7 @@ class Simulation(object):
         # Load the map and populate the world
         self.wmap = worldmap.WorldMap(self.cfg.worldmap.filename, self.world)
         self.wmap.load()
-
+        self.user = self.wmap['user']
 
         return True
 
@@ -74,6 +75,18 @@ class Simulation(object):
         self.world.Step(self.timestep,
                         self.velocityIterations,
                         self.positionIterations)
-#        self.agentBody.update()
+        self.user.update()
 #        print self.body.position, self.body.angle, self.body.linearVelocity
 #        pass
+
+    def userAccelerate(self):
+        self.user.accelerate()
+
+    def userBreak(self):
+        self.user.break_()
+
+    def userTurnLeft(self):
+        self.user.turnLeft()
+
+    def userTurnRight(self):
+        self.user.turnRight()
