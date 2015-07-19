@@ -36,8 +36,6 @@ class MapLoader(object):
         maze = np.load(file(filename, 'rb'))
 #        self.walls = self.findWalls(np.flipud(maze))
         self.walls = self.findWalls(np.flipud(maze).transpose())
-
-
 if __name__ == '__main__':
     print 'map loader'
     ml = MapLoader()

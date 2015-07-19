@@ -34,6 +34,7 @@ class Game(object):
                       upper.tuple(), (lower.x, upper.y))
         # For the orthographic projecion
 #        self.area = np.array([lower.x, upper.x, lower.y, upper.y])
+#        self.area = np.array([lower.x, upper.x, lower.y, upper.y])
         self.area = np.array([lower.x, upper.x, lower.y, upper.y])
         self.area += WORLD_BORDERS
 

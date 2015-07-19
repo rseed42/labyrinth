@@ -187,31 +187,28 @@ class Simulation(object):
         self.running = False
         # Create the world
         worldAABB = b2.b2AABB()
-#        worldAABB.lowerBound = (-10, -10)
-#        worldAABB.upperBound = (10, 10)
-        worldAABB.lowerBound = (-40, -40)
-        worldAABB.upperBound = (40, 40)
+        worldAABB.lowerBound = (-10, -10)
+        worldAABB.upperBound = (10, 10)
+#        worldAABB.lowerBound = (-40, -40)
+#        worldAABB.upperBound = (40, 40)
 
         gravity = (0,0)
         doSleep = True
         self.world = b2.b2World(worldAABB, gravity, doSleep)
         # Add maze
-        self.mapLoader = MapLoader()
-        self.mapLoader.load(MAZE_FILENAME)
-        scale = 1.
+#        self.mapLoader = MapLoader()
+#        self.mapLoader.load(MAZE_FILENAME)
+#        scale = 1.
 #        trans = (-40, -40)
-        trans = (-40, -40)
-
-
-        for wall in self.mapLoader.walls:
-            for brick in wall:
-                brickBodyDef = b2.b2BodyDef()
-                brickBodyDef.position = (brick[0]*scale+trans[0],
-                                         brick[1]*scale+trans[1])
-                brickBody = self.world.CreateBody(brickBodyDef)
-                brickShapeDef = b2.b2PolygonDef()
-                brickShapeDef.SetAsBox(0.5*scale, 0.5*scale)
-                brickBody.CreateShape(brickShapeDef)
+#        for wall in self.mapLoader.walls:
+#            for brick in wall:
+#                brickBodyDef = b2.b2BodyDef()
+#                brickBodyDef.position = (brick[0]*scale+trans[0],
+#                                         brick[1]*scale+trans[1])
+#                brickBody = self.world.CreateBody(brickBodyDef)
+#                brickShapeDef = b2.b2PolygonDef()
+#                brickShapeDef.SetAsBox(0.5*scale, 0.5*scale)
+#                brickBody.CreateShape(brickShapeDef)
 
         # Add ground
         groundBodyDef = b2.b2BodyDef()
