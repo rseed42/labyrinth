@@ -1,3 +1,6 @@
 {
-
+    "solver" : {"timestep" : 0.016666666666666666,
+                "velocityIterations" : 10,
+                "positionIterations": 8},
+    "world" : { "lowerBound" : [-10, -10], "upperBound" : [10, 10]}
 }

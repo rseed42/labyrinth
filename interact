@@ -6,6 +6,7 @@ import viz
 from conf import msg
 #-------------------------------------------------------------------------------
 DEFAULT_VIZ_CFG_FILE = "conf/visualization.json"
+DEFAULT_SIM_CFG_FILE = "conf/simulation.json"
 #-------------------------------------------------------------------------------
 if __name__ ==  '__main__':
     parser = argparse.ArgumentParser('ineract')
@@ -14,9 +15,13 @@ if __name__ ==  '__main__':
     parser.add_argument('--cfg-viz', dest='cfg_viz',
                         default=DEFAULT_VIZ_CFG_FILE,
                         help='Configuration file for the visualization')
+    parser.add_argument('--cfg-sim', dest='cfg_sim',
+                        default=DEFAULT_SIM_CFG_FILE,
+                        help='Configuration file for the simulation')
     args = parser.parse_args()
     # Create and prepare the simulation
     sim = simulation.Simulation()
+    sim.configure(args.cfg_sim)
     if not sim.load():
         sys.stderr.write(msg.sim_load_fail + msg.newline)
         sys.exit(1)

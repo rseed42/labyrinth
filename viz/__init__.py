@@ -41,6 +41,7 @@ class Visualization(object):
         self.frameStart = 0
         self.frameTime = 0
         self.sim = simulation
+        self.runSimulation = True
 #        aabb = self.sim.world.GetWorldAABB()
 #        lower, upper = aabb.lowerBound, aabb.upperBound
 #        self.space = (lower.tuple(),(upper.x,lower.y),
@@ -93,7 +94,9 @@ class Visualization(object):
             events = sdlx.get_events()
             for event in events:
                 self.process_event(event)
-#            self.sim.step()
+            # Only run the simulation if allowed
+            if self.runSimulation:
+                self.sim.step()
             self.render()
             self.frameTime = sdl.SDL_GetTicks() - self.frameStart
             if self.frameTime < self.delay_time:
