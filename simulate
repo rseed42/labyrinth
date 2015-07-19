@@ -8,5 +8,5 @@ if __name__ ==  '__main__':
     parser.add_argument('-l', dest='log', action='store_true',
                         help='Write to a log file')
     args = parser.parse_args()
-    sim = simulation.Simulation()
-    sim.start()
+#    sim = simulation.Simulation()
+#    sim.start()
