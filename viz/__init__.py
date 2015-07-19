@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
-import json
 from conf import msg
+# Refactor this nicely some day
 try:
     import sdl2 as sdl
     import sdl2.ext as sdlx
@@ -18,16 +18,13 @@ try:
 except ImportError:
     sys.stderr.write(msg.import_numpy_fail+msg.newline)
     sys.exit(1)
+try:
+    import bunch
+except ImportError:
+    sys.stderr.write(msg.import_bunch_fail+msg.newline)
+    sys.exit(1)
 #-------------------------------------------------------------------------------
-WND_SIZE = (600, 600)
-# Assuming width >= height
-#ASPECT = float(WND_SIZE[0])/WND_SIZE[1]
 WND_FLAGS = sdl.SDL_WINDOW_OPENGL | sdl.SDL_WINDOW_SHOWN
-# left, right, bottom, top
-WORLD_BORDERS = np.array([-0.05, 0.05, -0.05, 0.05])
-BORDER_COLOR = np.array([1,1,1])*0.75
-FPS = 60
-DELAY_TIME = 1000.0 / FPS
 #-------------------------------------------------------------------------------
 # A very simple opengl app
 #-------------------------------------------------------------------------------
@@ -52,11 +49,19 @@ class Visualization(object):
 #        self.area = np.array([lower.x, upper.x, lower.y, upper.y])
 #        self.area += WORLD_BORDERS
 
+    def configure(self, cfg_file):
+        import json
+        fp = file(cfg_file, 'r')
+        self.cfg = bunch.bunchify(json.load(fp))
+        fp.close()
+        # Set up configuration (override initialized vars if necessary)
+        self.delay_time = 1000./self.cfg.fps
+
     def init_gl(self):
-        gl.glClearColor(0,0,0,0)
+        gl.glClearColor(*self.cfg.color.background)
         gl.glClearDepth(1.0)
         gl.glEnable(gl.GL_TEXTURE_2D)
-        gl.glViewport(0,0,WND_SIZE[0], WND_SIZE[1])
+        gl.glViewport(0,0,self.cfg.window.width, self.cfg.window.height)
 #        gl.glOrtho(self.area[0], self.area[1], self.area[2], self.area[3],-1, 1)
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
@@ -66,10 +71,11 @@ class Visualization(object):
             return False
 
         sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DOUBLEBUFFER, 1)
-        self.window = sdl.SDL_CreateWindow('Interactive Visualization',
+        self.window = sdl.SDL_CreateWindow(self.cfg.window.title,
                                            sdl.SDL_WINDOWPOS_CENTERED,
                                            sdl.SDL_WINDOWPOS_CENTERED,
-                                           WND_SIZE[0], WND_SIZE[1],
+                                           self.cfg.window.width,
+                                           self.cfg.window.height,
                                            WND_FLAGS
         )
         if not self.window: return False
@@ -80,7 +86,8 @@ class Visualization(object):
 
     def start(self):
         if not self.initialize():
-            sys.exit(-1)
+            sys.stderr.write(msg.viz_gl_init_fail+msg.newline)
+            sys.exit(1)
         while self.running:
             self.frameStart = sdl.SDL_GetTicks()
             events = sdlx.get_events()
@@ -89,8 +96,8 @@ class Visualization(object):
 #            self.sim.step()
             self.render()
             self.frameTime = sdl.SDL_GetTicks() - self.frameStart
-            if self.frameTime < DELAY_TIME:
-                sdl.SDL_Delay(int(DELAY_TIME - self.frameTime))
+            if self.frameTime < self.delay_time:
+                sdl.SDL_Delay(int(self.delay_time - self.frameTime))
         self.cleanup()
         sys.exit(0)
 
@@ -126,20 +133,20 @@ class Visualization(object):
         sdl.SDL_DestroyWindow(self.window)
         sdl.SDL_Quit()
 
-#    def process_event(self, event):
-#        if event.type == sdl.SDL_KEYDOWN:
-#            self.on_key_down(event.key.keysym)
+    def process_event(self, event):
+        if event.type == sdl.SDL_KEYDOWN:
+            self.on_key_down(event.key.keysym)
 #        if event.type == sdl.SDL_KEYUP:
 #            self.on_key_up(event.key.keysym)
-#        if event.type == sdl.SDL_QUIT:
-#            self.exit_()
+        if event.type == sdl.SDL_QUIT:
+            self.exit_()
 
     def exit_(self):
         self.running = False
 
-#    def on_key_down(self, keysym):
-#        if keysym.sym == sdl.SDLK_q:
-#            self.exit_()
+    def on_key_down(self, keysym):
+        if keysym.sym == sdl.SDLK_q:
+            self.exit_()
 #        if keysym.sym == sdl.SDLK_UP:
 #            self.sim.agentBody.body.WakeUp()
 #            self.sim.agentBody.deccelerate()
