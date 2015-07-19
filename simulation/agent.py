@@ -4,6 +4,18 @@ try:
 except ImportError:
     sys.stderr.write(msg.import_box2d_fail+msg.newline)
     sys.exit(1)
+try:
+    import numpy as np
+except ImportError:
+    sys.stderr.write(msg.import_numpy_fail+msg.newline)
+    sys.exit(1)
+
+#-------------------------------------------------------------------------------
+# Agent sight sensor
+#-------------------------------------------------------------------------------
+class SightSensor(object):
+    def __init__(self, sensorFixture):
+        self.fixture = sensorFixture
 #-------------------------------------------------------------------------------
 # Main Simulation Object
 #-------------------------------------------------------------------------------
@@ -22,6 +34,7 @@ class Agent(object):
         self.frontRightWheel = None
         self.rearLeftWheel = None
         self.rearRightWheel = None
+        self.sensor = None
 
     def addWheel(self, world, carBody, carPos, cfg):
         wheelDef = b2.b2BodyDef()
@@ -71,6 +84,27 @@ class Agent(object):
         bodyDef.angularDamping = cfg.angularDamping
         bodyDef.position = cfg.position
         self.body = world.CreateBody(bodyDef)
+        self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+                                       friction=cfg.friction,
+                                       density=cfg.density,
+                                       restitution=cfg.restitution
+        )
+        # Create Sensor
+        sensorFov = b2.b2PolygonShape()
+        # Define sensor shape
+        w, h = cfg.sensor.fov.width, cfg.sensor.fov.height
+        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
+                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
+        # Move sensor relative to the body
+        relpos = np.array([cfg.sensor.relpos.x, cfg.sensor.relpos.y])
+        sensorFov.vertices = (fov+relpos).tolist()
+        sensorFixtureDef = b2.b2FixtureDef()
+        sensorFixtureDef.isSensor = True
+        sensorFixtureDef.shape = sensorFov
+#        print sensorFixture
+        self.sensor = SightSensor(self.body.CreateFixture(sensorFixtureDef))
+
+
         self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
                                        friction=cfg.friction,
                                        density=cfg.density,
@@ -152,20 +186,21 @@ class Agent(object):
         """ Vertices are presupplied, in world coordinates
         """
         # Kinda inefficient, but we are not worried about performance yet
-        vertices = verts[:3] + verts[2:] + [verts[0]]
+#        vertices = verts[:3] + verts[2:] + [verts[0]]
         verticesBorder = [v for v in verts] + [verts[0]]
         # Box
-        gl.glColor3f(*self.colorChassis)
-        gl.glBegin(gl.GL_TRIANGLES)
-        for v in vertices:
-            gl.glVertex2f(*v)
-        gl.glEnd()
+#        gl.glColor3f(*self.colorChassis)
+#        gl.glBegin(gl.GL_TRIANGLES)
+#        for v in vertices:
+#            gl.glVertex2f(*v)
+#        gl.glEnd()
         # Border
         gl.glColor3f(*self.colorBorder)
         gl.glBegin(gl.GL_LINE_STRIP)
         for v in verticesBorder:
             gl.glVertex2f(*v)
         gl.glEnd()
+
 
     def draw(self, gl):
         # Display the chassis
@@ -183,3 +218,8 @@ class Agent(object):
         self.drawBox(gl, self.colorChassis, self.colorBorder,
              map(self.rearRightWheel.GetWorldPoint,
                  self.rearRightWheel.fixtures[0].shape.vertices))
+
+        # Draw sensor field
+        self.drawBox(gl, self.colorChassis, self.colorBorder,
+             map(self.body.GetWorldPoint,
+                 self.body.fixtures[1].shape.vertices))

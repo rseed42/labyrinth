@@ -3,5 +3,6 @@
     "fps": 60,
     "gl":{},
     "color": {"background" : [0,0,0,0],
-              "mazeWall": [0,0.15,1]}
+              "mazeWall": [0,0.15,1]},
+    "agentFov": [16, 10]
 }

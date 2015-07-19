@@ -45,6 +45,7 @@ class Visualization(object):
         self.runSimulation = True
         # Rendering
         self.mazeWallColor = None
+        self.agentFov = None
 
     def configure(self, cfg_file):
         import json
@@ -54,6 +55,7 @@ class Visualization(object):
         # Set up configuration (override initialized vars if necessary)
         self.delay_time = 1000./self.cfg.fps
         self.mazeWallColor = tuple(self.cfg.color.mazeWall)
+        self.agentFov = self.cfg.agentFov
 
     def init_gl(self):
         gl.glClearColor(*self.cfg.color.background)
