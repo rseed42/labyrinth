@@ -24,9 +24,12 @@ class Agent(object):
         # Control variables
         self.max_engine_speed = 0
         self.reverse_engine_speed = 0
+        self.reverse_engine_acc_step = 0
+        self.acceleration_step = 0
         self.engineSpeed = 0
         self.steering_speed = 0
         self.max_steer_angle = 0
+        self.steer_angle_step = 0
         self.steeringAngle = 0
         self.colorChassis = None
         self.colorBorder = None
@@ -53,7 +56,8 @@ class Agent(object):
         jointDef = b2.b2RevoluteJointDef()
         jointDef.Initialize(carBody, wheel, wheel.worldCenter)
         jointDef.enableMotor = True
-        jointDef.maxMotorTorque = 100
+#        jointDef.maxMotorTorque = 100
+        jointDef.maxMotorTorque = cfg.max_motor_torque
         joint = world.CreateJoint(jointDef)
         return wheel
 
@@ -74,9 +78,12 @@ class Agent(object):
         self.colorChassis = cfg.color.chassis
         self.colorBorder = cfg.color.border
         self.max_engine_speed = cfg.max_engine_speed
-        self.reverse_engine_speed = cfg.reverse_engine_speed
         self.max_steer_angle = (b2.b2_pi/180)*cfg.max_steer_angle
         self.steering_speed = cfg.steering_speed
+        self.acceleration_step = cfg.acceleration_step
+        self.reverse_engine_max_speed = cfg.reverse_engine_max_speed
+        self.reverse_engine_acc_step = cfg.reverse_engine_acc_step
+        self.steer_angle_step = cfg.steer_angle_step
         # Agent body
         bodyDef = b2.b2BodyDef()
         bodyDef.type = b2.b2_dynamicBody
@@ -125,13 +132,15 @@ class Agent(object):
                                                   cfg.wheels.rearRight)
 
     def accelerate(self):
-        self.engineSpeed = self.max_engine_speed
+        if self.engineSpeed < self.max_engine_speed:
+            self.engineSpeed += self.acceleration_step
 
     def releaseAccelerator(self):
         self.engineSpeed = 0
 
     def reverse(self):
-        self.engineSpeed = -self.reverse_engine_speed
+        if self.engineSpeed < self.reverse_engine_max_speed:
+            self.engineSpeed -= self.reverse_engine_acc_step
 
     def releaseReverse(self):
         self.engineSpeed = 0
@@ -146,9 +155,13 @@ class Agent(object):
 
     def steerLeft(self):
         self.steeringAngle = self.max_steer_angle
+#        if self.steeringAngle < self.max_steer_angle:
+#            self.steeringAngle += self.steer_angle_step
 
     def steerRight(self):
         self.steeringAngle = -self.max_steer_angle
+#        if self.steeringAngle > -self.max_steer_angle:
+#            self.steeringAngle -= self.steer_angle_step
 
     def releaseSteering(self):
         self.steeringAngle = 0
