@@ -9,13 +9,12 @@ try:
 except ImportError:
     sys.stderr.write(msg.import_numpy_fail+msg.newline)
     sys.exit(1)
-
 #-------------------------------------------------------------------------------
 # Agent sight sensor
 #-------------------------------------------------------------------------------
-class SightSensor(object):
-    def __init__(self, sensorFixture):
-        self.fixture = sensorFixture
+#class SightSensor(object):
+#    def __init__(self, sensorFixture):
+#        self.fixture = sensorFixture
 #-------------------------------------------------------------------------------
 # Main Simulation Object
 #-------------------------------------------------------------------------------
@@ -109,7 +108,8 @@ class Agent(object):
         sensorFixtureDef.isSensor = True
         sensorFixtureDef.shape = sensorFov
 #        print sensorFixture
-        self.sensor = SightSensor(self.body.CreateFixture(sensorFixtureDef))
+#        self.sensor = SightSensor(self.body.CreateFixture(sensorFixtureDef))
+        self.sensor = self.body.CreateFixture(sensorFixtureDef)
 
 
         self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
@@ -130,7 +130,6 @@ class Agent(object):
         self.rearRightWheel = self.addRearWheel(world, self.body,
                                                   cfg.position,
                                                   cfg.wheels.rearRight)
-
     def accelerate(self):
         if self.engineSpeed < self.max_engine_speed:
             self.engineSpeed += self.acceleration_step

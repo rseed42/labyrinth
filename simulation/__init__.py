@@ -13,6 +13,35 @@ except ImportError:
 #from loader import MapLoader
 import worldmap
 #-------------------------------------------------------------------------------
+# Contact Listener for the agent
+#-------------------------------------------------------------------------------
+class WorldContactListener(b2.b2ContactListener):
+    def __init__(self, agent):
+        b2.b2ContactListener.__init__(self)
+        self.agent = agent
+    def BeginContact(self, contact):
+        if not contact.touching: return
+        sensor = contact.fixtureA
+        fix = contact.fixtureB
+        if contact.fixtureB == self.agent.sensor:
+            sensor, fix = fix, sensor
+        if sensor != self.agent.sensor:
+            return
+        # Needs to be touching
+#        print fix.body.worldCenter
+
+
+    def EndContact(self, contact):
+        pass
+    def PreSolve(self, contact, oldManifold):
+        pass
+    def PostSolve(self, contact, impulse):
+        pass
+#-------------------------------------------------------------------------------
+class AgentController(object):
+    def register(self):
+        pass
+#-------------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self):
         # Non-interactive simulation:
@@ -49,6 +78,9 @@ class Simulation(object):
         self.wmap = worldmap.WorldMap(self.cfg.worldmap.filename, self.world)
         self.wmap.load()
         self.user = self.wmap['user']
+        # Set up oevent handling
+        self.contactListener = WorldContactListener(self.user)
+        self.world.contactListener = self.contactListener
         return True
 
     def reset(self):
@@ -57,7 +89,6 @@ class Simulation(object):
         self.user = None
         if not self.load():
             sys.stderr.write(msg.sim_load_fail+msg.newline)
-
 
     def getAgents(self):
         return self.wmap
