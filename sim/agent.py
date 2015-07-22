@@ -43,11 +43,12 @@ class Agent(object):
         wheelDef.type = b2.b2_dynamicBody
         wheelDef.position = b2.b2Vec2(carPos) + b2.b2Vec2(cfg.position)
         wheel = world.CreateBody(wheelDef)
-        wheel.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+        fx = wheel.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
                                        friction=cfg.friction,
                                        density=cfg.density,
                                        restitution=cfg.restitution
         )
+#        print hex(id(fx))
         return wheel
 
     def addFrontWheel(self, world, carBody, carPos, cfg):
@@ -90,11 +91,12 @@ class Agent(object):
         bodyDef.angularDamping = cfg.angularDamping
         bodyDef.position = cfg.position
         self.body = world.CreateBody(bodyDef)
-        self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+        fx = self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
                                        friction=cfg.friction,
                                        density=cfg.density,
                                        restitution=cfg.restitution
         )
+#        print hex(id(fx))
         # Create Sensor
         sensorFov = b2.b2PolygonShape()
         # Define sensor shape
@@ -110,6 +112,9 @@ class Agent(object):
 #        print sensorFixture
 #        self.sensor = SightSensor(self.body.CreateFixture(sensorFixtureDef))
         self.sensor = self.body.CreateFixture(sensorFixtureDef)
+#        print hex(id(self.sensor))
+#        for i,f in enumerate(self.body.fixtures):
+#            print "f%d: %s" % (i, str(hex(id(f))))
 
 
         self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
@@ -130,6 +135,8 @@ class Agent(object):
         self.rearRightWheel = self.addRearWheel(world, self.body,
                                                   cfg.position,
                                                   cfg.wheels.rearRight)
+#        print '-'*20
+
     def accelerate(self):
         if self.engineSpeed < self.max_engine_speed:
             self.engineSpeed += self.acceleration_step

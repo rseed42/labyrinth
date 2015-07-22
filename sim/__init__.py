@@ -20,16 +20,17 @@ class WorldContactListener(b2.b2ContactListener):
         b2.b2ContactListener.__init__(self)
         self.agent = agent
     def BeginContact(self, contact):
-        if not contact.touching: return
-        sensor = contact.fixtureA
-        fix = contact.fixtureB
-        if contact.fixtureB == self.agent.sensor:
-            sensor, fix = fix, sensor
-        if sensor != self.agent.sensor:
-            return
+        pass
+#        print hex(id(contact.fixtureA)), hex(id(contact.fixtureB))
+#        if not contact.touching: return
+#        sensor = contact.fixtureA
+#        fix = contact.fixtureB
+#        if contact.fixtureA == self.agent.sensor:
+#            print '-S-'
+#        if contact.fixtureB == self.agent.sensor:
+#            print '-S-'
         # Needs to be touching
 #        print fix.body.worldCenter
-
 
     def EndContact(self, contact):
         pass
