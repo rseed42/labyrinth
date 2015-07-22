@@ -10,38 +10,8 @@ try:
 except ImportError:
     sys.stderr.write(msg.import_bunch_fail+msg.newline)
     sys.exit(1)
-#from loader import MapLoader
 import worldmap
-#-------------------------------------------------------------------------------
-# Contact Listener for the agent
-#-------------------------------------------------------------------------------
-class WorldContactListener(b2.b2ContactListener):
-    def __init__(self, agent):
-        b2.b2ContactListener.__init__(self)
-        self.agent = agent
-    def BeginContact(self, contact):
-        pass
-#        print hex(id(contact.fixtureA)), hex(id(contact.fixtureB))
-#        if not contact.touching: return
-#        sensor = contact.fixtureA
-#        fix = contact.fixtureB
-#        if contact.fixtureA == self.agent.sensor:
-#            print '-S-'
-#        if contact.fixtureB == self.agent.sensor:
-#            print '-S-'
-        # Needs to be touching
-#        print fix.body.worldCenter
-
-    def EndContact(self, contact):
-        pass
-    def PreSolve(self, contact, oldManifold):
-        pass
-    def PostSolve(self, contact, impulse):
-        pass
-#-------------------------------------------------------------------------------
-class AgentController(object):
-    def register(self):
-        pass
+from contactlistener import WorldContactListener
 #-------------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self):

@@ -12,6 +12,7 @@ try:
     import OpenGL.GL as gl
     import OpenGL.GLU as glu
     import OpenGL.arrays.vbo as glvbo
+    from OpenGL.GL import shaders
 except ImportError:
     sys.stderr.write(msg.import_opengl_fail+msg.newline)
     sys.exit(1)
@@ -29,6 +30,22 @@ except ImportError:
 WND_FLAGS = sdl.SDL_WINDOW_OPENGL | sdl.SDL_WINDOW_SHOWN
 #-------------------------------------------------------------------------------
 # A very simple opengl app
+# Check if 330 is supported on this machine
+#-------------------------------------------------------------------------------
+VERTEX_SHADER = """#version 130
+uniform mat4 mat_ModelView;
+uniform mat4 mat_Proj;
+in vec4 Vertex;
+void main(){
+//    gl_Position = mat_ModelView * Vertex;
+    gl_Position = mat_Proj * mat_ModelView * Vertex;
+}
+"""
+FRAGMENT_SHADER = """#version 130
+void main(){
+  gl_FragColor = vec4(0,0,1,0.7);
+}
+"""
 #-------------------------------------------------------------------------------
 class Visualization(object):
     """ Interactive visualization of the simulation. Default mode is to display the
@@ -44,10 +61,17 @@ class Visualization(object):
         self.frameTime = 0
         self.sim = simulation
         self.runSimulation = True
+        # Window
+        self.width = 0
+        self.height = 0
         # Rendering
         self.mazeWallColor = None
         self.agentFov = None
         self.worldView = False
+        self.uniforms = {}
+        self.mat_model = np.identity(4, 'f')
+        self.mat_model[1,3] = 0.1
+        self.mat_worldProj = np.identity(4,'f')
 
     def configure(self, cfg_file):
         import json
@@ -59,12 +83,53 @@ class Visualization(object):
         self.mazeWallColor = tuple(self.cfg.color.mazeWall)
         self.agentFov = self.cfg.agentFov
         self.worldView = self.cfg.worldView
+        self.width = self.cfg.window.width
+        self.height = self.cfg.window.height
+        # World Projection Matrix
+        aspect = float(800)/600
+        left = 0.
+        right = 201.*aspect
+        top = 0.
+        bottom = 201.
+        zNear = -1
+        zFar = 1.
+        self.mat_worldProj[0,0] = 2./(right-left)
+        self.mat_worldProj[0,3] = - (right+left) / (right-left)
+        self.mat_worldProj[1,1] = 2./(top-bottom)
+        self.mat_worldProj[1,3] = -(top+bottom)/(top-bottom)
+        self.mat_worldProj[2,2] = -2 / (zFar - zNear)
+        self.mat_worldProj[2,3] = - (zFar+zNear)/ (zFar - zNear)
+        self.mat_worldProj[3,3] = 1.
+
+
+    def loadShaders(self, gl):
+        vertex_shader = shaders.compileShader(VERTEX_SHADER,
+                                              gl.GL_VERTEX_SHADER)
+        fragment_shader = shaders.compileShader(FRAGMENT_SHADER,
+                                                gl.GL_FRAGMENT_SHADER)
+        self.shader = shaders.compileProgram(vertex_shader, fragment_shader)
+
+
+#        self.mat_proj[0,0] = 1./(0.5*self.width)
+#        self.mat_proj[1,1] = 1./(0.5*self.height)
+#        self.mat_proj[2,2] = -1
+
+        # Pass the transformation matrix
+        self.uniforms['mat_ModelView'] =  gl.glGetUniformLocation(self.shader,
+                                                                  'mat_ModelView')
+        self.uniforms['mat_Proj'] =  gl.glGetUniformLocation(self.shader,
+                                                             'mat_Proj')
+
+        self.uniforms['mat_Test'] = gl.glGetUniformLocation(self.shader,
+                                                           'mat_Test')
 
     def init_gl(self):
         gl.glClearColor(*self.cfg.color.background)
         gl.glClearDepth(1.0)
         gl.glEnable(gl.GL_TEXTURE_2D)
-        gl.glViewport(0,0,self.cfg.window.width, self.cfg.window.height)
+        gl.glViewport(0,0,self.width, self.height)
+        # Load shaders
+        self.loadShaders(gl)
         # Load static map for the maze walls
         self.wallTriangles = self.sim.wmap.generateWallTriangles()
         self.vboMazeWalls = glvbo.VBO(self.wallTriangles)
@@ -109,27 +174,35 @@ class Visualization(object):
     def render(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # Global world view
-        if self.worldView:
-            aspect = float(800)/600
-            gl.glMatrixMode(gl.GL_PROJECTION)
-            gl.glLoadIdentity()
-            gl.glOrtho(0, 201*aspect, 0, 201,-1, 1)
-        # Agent View
-        else:
-            gl.glMatrixMode(gl.GL_PROJECTION)
-            gl.glLoadIdentity()
-            gl.glOrtho(0, 40, 0, 30,-1, 1)
-            gl.glMatrixMode(gl.GL_MODELVIEW)
-            gl.glLoadIdentity()
-            user = self.sim.user
-            translation = user.body.transform.position
-            sensorVerts = user.body.fixtures[1].shape.vertices
-            gl.glTranslatef(sensorVerts[0][0],-(16-0.5*30),0)
-            gl.glRotatef((180/np.pi)*user.body.transform.angle, 0, 0, -1)
-            gl.glTranslatef(-translation.x,-translation.y,0)
+#        if self.worldView:
+#            aspect = float(800)/600
+#            gl.glMatrixMode(gl.GL_PROJECTION)
+#            gl.glLoadIdentity()
+#            gl.glOrtho(0, 201*aspect, 0, 201,-1, 1)
+#        # Agent View
+#        else:
+#            gl.glMatrixMode(gl.GL_PROJECTION)
+#            gl.glLoadIdentity()
+#            gl.glOrtho(0, 40, 0, 30,-1, 1)
+#            gl.glMatrixMode(gl.GL_MODELVIEW)
+#            gl.glLoadIdentity()
+#            user = self.sim.user
+#            translation = user.body.transform.position
+#            sensorVerts = user.body.fixtures[1].shape.vertices
+#            gl.glTranslatef(sensorVerts[0][0],-(16-0.5*30),0)
+#            gl.glRotatef((180/np.pi)*user.body.transform.angle, 0, 0, -1)
+#            gl.glTranslatef(-translation.x,-translation.y,0)
 
         # Load static buffers
-        gl.glColor3f(*self.mazeWallColor)
+#        gl.glColor3f(*self.mazeWallColor)
+
+        shaders.glUseProgram(self.shader)
+        gl.glUniformMatrix4fv(self.uniforms['mat_ModelView'], 1, True,
+                              self.mat_model)
+        gl.glUniformMatrix4fv(self.uniforms['mat_Proj'], 1, True,
+                              self.mat_worldProj)
+
+
         try:
             self.vboMazeWalls.bind()
             try:
@@ -142,11 +215,11 @@ class Visualization(object):
                 gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
         finally:
             # We can also use shaders, etc.
-            pass
+            shaders.glUseProgram(0)
 
         # The dynamics body are rendered in a more simple way
-        for name, agent in self.sim.getAgents().items():
-            agent.draw(gl, self.worldView)
+#        for name, agent in self.sim.getAgents().items():
+#            agent.draw(gl, self.worldView)
 
         sdl.SDL_GL_SwapWindow(self.window)
 

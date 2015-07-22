@@ -100,6 +100,5 @@ class WorldMap(dict):
         self["user"].construct(self.cfg.user, self.world)
         # Set up controller (later)
 
-
     def test(self):
         pass
