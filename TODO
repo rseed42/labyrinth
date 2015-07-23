@@ -1,0 +1,8 @@
+1. Make car an octagon to look cool
+2. Improve car dynamics:
+    - gradual acceleration (not max)
+    - brakes
+    - experiment with values
+    - think about general improvements
+3. Start implementing an AI
+4. Implement other static objects
