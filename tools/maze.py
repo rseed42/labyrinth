@@ -5,8 +5,11 @@ from numpy.random import random_integers as rand
 import matplotlib.pyplot as pyplot
 
 
-WIDTH = 200
-HEIGHT= 200
+#WIDTH = 200
+#HEIGHT= 200
+WIDTH = 50
+HEIGHT= 50
+
 COMPLEXITY = 0.01
 DENSITY = 0.01
 

@@ -70,8 +70,19 @@ class Visualization(object):
         self.worldView = False
         self.uniforms = {}
         self.mat_model = np.identity(4, 'f')
-        self.mat_model[1,3] = 0.1
-        self.mat_worldProj = np.identity(4,'f')
+        self.mat_worldProj = None
+        self.mat_agentProj = None
+
+    def projMatrix(self,left,right,top,bottom,near,far):
+        mat = np.identity(4, 'f')
+        mat[0,0] = 2./(right-left)
+        mat[0,3] = - (right+left) / (right-left)
+        mat[1,1] = 2./(top-bottom)
+        mat[1,3] = -(top+bottom)/(top-bottom)
+        mat[2,2] = -2 / (far - near)
+        mat[2,3] = - (far+near)/ (far - near)
+        mat[3,3] = 1.
+        return mat
 
     def configure(self, cfg_file):
         import json
@@ -86,21 +97,19 @@ class Visualization(object):
         self.width = self.cfg.window.width
         self.height = self.cfg.window.height
         # World Projection Matrix
-        aspect = float(800)/600
-        left = 0.
-        right = 201.*aspect
-        top = 0.
-        bottom = 201.
-        zNear = -1
-        zFar = 1.
-        self.mat_worldProj[0,0] = 2./(right-left)
-        self.mat_worldProj[0,3] = - (right+left) / (right-left)
-        self.mat_worldProj[1,1] = 2./(top-bottom)
-        self.mat_worldProj[1,3] = -(top+bottom)/(top-bottom)
-        self.mat_worldProj[2,2] = -2 / (zFar - zNear)
-        self.mat_worldProj[2,3] = - (zFar+zNear)/ (zFar - zNear)
-        self.mat_worldProj[3,3] = 1.
-
+        self.mat_worldProj = self.projMatrix(0,self.sim.wmap.width,
+                                             0,self.sim.wmap.height,
+                                             -1,1)
+        # Agent Projection Matrix
+        self.mat_agentProj = self.projMatrix(0,40,0,30,-1,1)
+        user = self.sim.user
+        translation = user.body.transform.position
+        sensorVerts = user.body.fixtures[1].shape.vertices
+#            gl.glTranslatef(sensorVerts[0][0],-(16-0.5*30),0)
+        sensorTrans = np.identity(4,'f')
+#        sensorTrans[0,3] = sensorVerts[0][0]
+#        sensorTrans[1,3] = -(16-0.5*30)
+#        self.mat_agentProj = np.dot(self.mat_agentProj, sensorTrans)
 
     def loadShaders(self, gl):
         vertex_shader = shaders.compileShader(VERTEX_SHADER,
@@ -108,11 +117,6 @@ class Visualization(object):
         fragment_shader = shaders.compileShader(FRAGMENT_SHADER,
                                                 gl.GL_FRAGMENT_SHADER)
         self.shader = shaders.compileProgram(vertex_shader, fragment_shader)
-
-
-#        self.mat_proj[0,0] = 1./(0.5*self.width)
-#        self.mat_proj[1,1] = 1./(0.5*self.height)
-#        self.mat_proj[2,2] = -1
 
         # Pass the transformation matrix
         self.uniforms['mat_ModelView'] =  gl.glGetUniformLocation(self.shader,
@@ -173,53 +177,56 @@ class Visualization(object):
 
     def render(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        shaders.glUseProgram(self.shader)
         # Global world view
-#        if self.worldView:
-#            aspect = float(800)/600
-#            gl.glMatrixMode(gl.GL_PROJECTION)
-#            gl.glLoadIdentity()
-#            gl.glOrtho(0, 201*aspect, 0, 201,-1, 1)
-#        # Agent View
-#        else:
-#            gl.glMatrixMode(gl.GL_PROJECTION)
-#            gl.glLoadIdentity()
-#            gl.glOrtho(0, 40, 0, 30,-1, 1)
-#            gl.glMatrixMode(gl.GL_MODELVIEW)
-#            gl.glLoadIdentity()
-#            user = self.sim.user
-#            translation = user.body.transform.position
-#            sensorVerts = user.body.fixtures[1].shape.vertices
-#            gl.glTranslatef(sensorVerts[0][0],-(16-0.5*30),0)
+        if self.worldView:
+            gl.glUniformMatrix4fv(self.uniforms['mat_Proj'], 1, True,
+                                  self.mat_worldProj)
+        # Agent view
+        else:
+            user = self.sim.user
+            pos = user.body.transform.position
+            R = user.body.transform.R
 #            gl.glRotatef((180/np.pi)*user.body.transform.angle, 0, 0, -1)
 #            gl.glTranslatef(-translation.x,-translation.y,0)
+            trans = np.identity(4,'f')
+#            trans[0,3] = pos.x
+#            trans[1,3] = -pos.y
+
+            rot = np.identity(4,'f')
+#            rot[0,0] = R.col1.x
+#            rot[0,1] = R.col2.x
+#            rot[1,0] = R.col1.y
+#            rot[1,1] = R.col2.y
+#            self.mat_agentProj = np.dot(self.mat_agentProj, rot)
+#            self.mat_agentProj = np.dot(rot, self.mat_agentProj)
+            gl.glUniformMatrix4fv(self.uniforms['mat_Proj'], 1, True,
+                                  self.mat_agentProj)
 
         # Load static buffers
 #        gl.glColor3f(*self.mazeWallColor)
 
-        shaders.glUseProgram(self.shader)
         gl.glUniformMatrix4fv(self.uniforms['mat_ModelView'], 1, True,
                               self.mat_model)
-        gl.glUniformMatrix4fv(self.uniforms['mat_Proj'], 1, True,
-                              self.mat_worldProj)
 
-
-        try:
-            self.vboMazeWalls.bind()
-            try:
-                gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-                gl.glVertexPointerf(self.vboMazeWalls)
-                gl.glDrawArrays(gl.GL_TRIANGLES, 0,
-                                self.wallTriangles.size)
-            finally:
-                self.vboMazeWalls.unbind()
-                gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-        finally:
-            # We can also use shaders, etc.
-            shaders.glUseProgram(0)
+        self.vboMazeWalls.bind()
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glVertexPointerf(self.vboMazeWalls)
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.wallTriangles.size)
+        self.vboMazeWalls.unbind()
+        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 
         # The dynamics body are rendered in a more simple way
-#        for name, agent in self.sim.getAgents().items():
-#            agent.draw(gl, self.worldView)
+        for name, agent in self.sim.getAgents().items():
+            gl.glUniformMatrix4fv(self.uniforms['mat_ModelView'], 1, True,
+                                  agent.translation)
+            agent.vboBody.bind()
+            gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+            gl.glVertexPointerf(agent.vboBody)
+            gl.glDrawArrays(gl.GL_TRIANGLES, 0, agent.bodyVertices.size)
+            agent.vboBody.unbind()
+            gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+
 
         sdl.SDL_GL_SwapWindow(self.window)
 

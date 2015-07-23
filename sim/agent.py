@@ -9,6 +9,15 @@ try:
 except ImportError:
     sys.stderr.write(msg.import_numpy_fail+msg.newline)
     sys.exit(1)
+try:
+    import OpenGL.GL as gl
+    import OpenGL.GLU as glu
+    import OpenGL.arrays.vbo as glvbo
+    from OpenGL.GL import shaders
+except ImportError:
+    sys.stderr.write(msg.import_opengl_fail+msg.newline)
+    sys.exit(1)
+
 #-------------------------------------------------------------------------------
 # Agent sight sensor
 #-------------------------------------------------------------------------------
@@ -37,6 +46,8 @@ class Agent(object):
         self.rearLeftWheel = None
         self.rearRightWheel = None
         self.sensor = None
+        self.vboBody = None
+        self.translation = np.identity(4,'f')
 
     def addWheel(self, world, carBody, carPos, cfg):
         wheelDef = b2.b2BodyDef()
@@ -116,7 +127,6 @@ class Agent(object):
 #        for i,f in enumerate(self.body.fixtures):
 #            print "f%d: %s" % (i, str(hex(id(f))))
 
-
         self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
                                        friction=cfg.friction,
                                        density=cfg.density,
@@ -135,7 +145,17 @@ class Agent(object):
         self.rearRightWheel = self.addRearWheel(world, self.body,
                                                   cfg.position,
                                                   cfg.wheels.rearRight)
-#        print '-'*20
+        # Create vbos
+        vl = []
+        vertices = self.body.fixtures[0].shape.vertices
+        vl.append(vertices[0])
+        vl.append(vertices[1])
+        vl.append(vertices[2])
+        vl.append(vertices[0])
+        vl.append(vertices[2])
+        vl.append(vertices[3])
+        self.bodyVertices = np.array(vl, 'f')
+        self.vboBody = glvbo.VBO(self.bodyVertices)
 
     def accelerate(self):
         if self.engineSpeed < self.max_engine_speed:
@@ -200,6 +220,9 @@ class Agent(object):
         mspeed = self.steeringAngle - rj.angle
         rj.motorSpeed = mspeed * self.steering_speed
 
+        self.translation[0,3] = self.body.position.x
+        self.translation[1,3] = self.body.position.y
+#        print self.body.position
 
     def drawBox(self, gl, colFill, colBorder, verts):
         """ Vertices are presupplied, in world coordinates
