@@ -1,13 +1,15 @@
 #!/usr/bin/python
-
 import argparse
-#import simulation
 import sim
-
+#-------------------------------------------------------------------------------
+# Simulate on command-line
+#-------------------------------------------------------------------------------
 if __name__ ==  '__main__':
     parser = argparse.ArgumentParser('simulation')
     parser.add_argument('-l', dest='log', action='store_true',
                         help='Write to a log file')
+    parser.add_argument(dest='worldCfgFilename')
     args = parser.parse_args()
-#    sim = simulation.Simulation()
-#    sim.start()
+    simulation = sim.Simulation()
+    simulation.load(args.worldCfgFilename)
+    simulation.start()

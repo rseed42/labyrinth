@@ -6,5 +6,9 @@
     "color": {"background" : [0,0,0,0],
               "mazeWall": [0,0.15,1]},
     "agentFov": [16, 10],
-    "worldView": 1
+    "worldView": 1,
+    "shader" : {"shader_dir":"viz/shader/",
+                "vertex":{"filename" : "vertex.shader"},
+                "fragment":{"filename" : "fragment.shader"}
+    }
 }

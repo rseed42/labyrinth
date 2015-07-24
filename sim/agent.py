@@ -1,34 +1,11 @@
-from conf import msg
-try:
-    import Box2D as b2
-except ImportError:
-    sys.stderr.write(msg.import_box2d_fail+msg.newline)
-    sys.exit(1)
-try:
-    import numpy as np
-except ImportError:
-    sys.stderr.write(msg.import_numpy_fail+msg.newline)
-    sys.exit(1)
-try:
-    import OpenGL.GL as gl
-    import OpenGL.GLU as glu
-    import OpenGL.arrays.vbo as glvbo
-    from OpenGL.GL import shaders
-except ImportError:
-    sys.stderr.write(msg.import_opengl_fail+msg.newline)
-    sys.exit(1)
-
+import Box2D as b2
+import numpy as np
 #-------------------------------------------------------------------------------
-# Agent sight sensor
-#-------------------------------------------------------------------------------
-#class SightSensor(object):
-#    def __init__(self, sensorFixture):
-#        self.fixture = sensorFixture
-#-------------------------------------------------------------------------------
-# Main Simulation Object
+# Agent
 #-------------------------------------------------------------------------------
 class Agent(object):
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         # Control variables
         self.max_engine_speed = 0
         self.reverse_engine_speed = 0
@@ -39,15 +16,14 @@ class Agent(object):
         self.max_steer_angle = 0
         self.steer_angle_step = 0
         self.steeringAngle = 0
-        self.colorChassis = None
-        self.colorBorder = None
+        # Bodies
+        self.body = None
         self.frontLeftWheel = None
         self.frontRightWheel = None
         self.rearLeftWheel = None
         self.rearRightWheel = None
+        # Sensors
         self.sensor = None
-        self.vboBody = None
-        self.translation = np.identity(4,'f')
 
     def addWheel(self, world, carBody, carPos, cfg):
         wheelDef = b2.b2BodyDef()
@@ -59,7 +35,6 @@ class Agent(object):
                                        density=cfg.density,
                                        restitution=cfg.restitution
         )
-#        print hex(id(fx))
         return wheel
 
     def addFrontWheel(self, world, carBody, carPos, cfg):
@@ -67,7 +42,6 @@ class Agent(object):
         jointDef = b2.b2RevoluteJointDef()
         jointDef.Initialize(carBody, wheel, wheel.worldCenter)
         jointDef.enableMotor = True
-#        jointDef.maxMotorTorque = 100
         jointDef.maxMotorTorque = cfg.max_motor_torque
         joint = world.CreateJoint(jointDef)
         return wheel
@@ -84,10 +58,11 @@ class Agent(object):
         joint = world.CreateJoint(jointDef)
         return wheel
 
-    def construct(self, cfg, world):
-        # Update config
-        self.colorChassis = cfg.color.chassis
-        self.colorBorder = cfg.color.border
+    def addSensor(self, world, carBody, carPos, cfg):
+        pass
+
+    def construct(self, world, cfg):
+        # Initialize the control variables
         self.max_engine_speed = cfg.max_engine_speed
         self.max_steer_angle = (b2.b2_pi/180)*cfg.max_steer_angle
         self.steering_speed = cfg.steering_speed
@@ -102,36 +77,31 @@ class Agent(object):
         bodyDef.angularDamping = cfg.angularDamping
         bodyDef.position = cfg.position
         self.body = world.CreateBody(bodyDef)
+        self.body.userData = self
         fx = self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
                                        friction=cfg.friction,
                                        density=cfg.density,
                                        restitution=cfg.restitution
         )
-#        print hex(id(fx))
         # Create Sensor
-        sensorFov = b2.b2PolygonShape()
-        # Define sensor shape
-        w, h = cfg.sensor.fov.width, cfg.sensor.fov.height
-        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
-                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
-        # Move sensor relative to the body
-        relpos = np.array([cfg.sensor.relpos.x, cfg.sensor.relpos.y])
-        sensorFov.vertices = (fov+relpos).tolist()
-        sensorFixtureDef = b2.b2FixtureDef()
-        sensorFixtureDef.isSensor = True
-        sensorFixtureDef.shape = sensorFov
-#        print sensorFixture
-#        self.sensor = SightSensor(self.body.CreateFixture(sensorFixtureDef))
-        self.sensor = self.body.CreateFixture(sensorFixtureDef)
-#        print hex(id(self.sensor))
-#        for i,f in enumerate(self.body.fixtures):
-#            print "f%d: %s" % (i, str(hex(id(f))))
-
-        self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
-                                       friction=cfg.friction,
-                                       density=cfg.density,
-                                       restitution=cfg.restitution
-        )
+        self.addSensor(None, None, None, None)
+#        sensorFov = b2.b2PolygonShape()
+#        # Define sensor shape
+#        w, h = cfg.sensor.fov.width, cfg.sensor.fov.height
+#        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
+#                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
+#        # Move sensor relative to the body
+#        relpos = np.array([cfg.sensor.relpos.x, cfg.sensor.relpos.y])
+#        sensorFov.vertices = (fov+relpos).tolist()
+#        sensorFixtureDef = b2.b2FixtureDef()
+#        sensorFixtureDef.isSensor = True
+#        sensorFixtureDef.shape = sensorFov
+#        self.sensor = self.body.CreateFixture(sensorFixtureDef)
+#        self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+#                                       friction=cfg.friction,
+#                                       density=cfg.density,
+#                                       restitution=cfg.restitution
+#        )
         self.frontLeftWheel = self.addFrontWheel(world, self.body,
                                                  cfg.position,
                                                  cfg.wheels.frontLeft)
@@ -145,53 +115,53 @@ class Agent(object):
         self.rearRightWheel = self.addRearWheel(world, self.body,
                                                   cfg.position,
                                                   cfg.wheels.rearRight)
-        # Create vbos
-        vl = []
-        vertices = self.body.fixtures[0].shape.vertices
-        vl.append(vertices[0])
-        vl.append(vertices[1])
-        vl.append(vertices[2])
-        vl.append(vertices[0])
-        vl.append(vertices[2])
-        vl.append(vertices[3])
-        self.bodyVertices = np.array(vl, 'f')
-        self.vboBody = glvbo.VBO(self.bodyVertices)
-
-    def accelerate(self):
-        if self.engineSpeed < self.max_engine_speed:
-            self.engineSpeed += self.acceleration_step
-
-    def releaseAccelerator(self):
-        self.engineSpeed = 0
-
-    def reverse(self):
-        if self.engineSpeed < self.reverse_engine_max_speed:
-            self.engineSpeed -= self.reverse_engine_acc_step
-
-    def releaseReverse(self):
-        self.engineSpeed = 0
-
-    def brake(self):
-        pass
-        #print "brake"
-
-    def releaseBrake(self):
-        pass
-        #print "releaseBrake"
-
-    def steerLeft(self):
-        self.steeringAngle = self.max_steer_angle
-#        if self.steeringAngle < self.max_steer_angle:
-#            self.steeringAngle += self.steer_angle_step
-
-    def steerRight(self):
-        self.steeringAngle = -self.max_steer_angle
-#        if self.steeringAngle > -self.max_steer_angle:
-#            self.steeringAngle -= self.steer_angle_step
-
-    def releaseSteering(self):
-        self.steeringAngle = 0
-
+#        # Create vbos
+#        vl = []
+#        vertices = self.body.fixtures[0].shape.vertices
+#        vl.append(vertices[0])
+#        vl.append(vertices[1])
+#        vl.append(vertices[2])
+#        vl.append(vertices[0])
+#        vl.append(vertices[2])
+#        vl.append(vertices[3])
+#        self.bodyVertices = np.array(vl, 'f')
+#        self.vboBody = glvbo.VBO(self.bodyVertices)
+#
+#    def accelerate(self):
+#        if self.engineSpeed < self.max_engine_speed:
+#            self.engineSpeed += self.acceleration_step
+#
+#    def releaseAccelerator(self):
+#        self.engineSpeed = 0
+#
+#    def reverse(self):
+#        if self.engineSpeed < self.reverse_engine_max_speed:
+#            self.engineSpeed -= self.reverse_engine_acc_step
+#
+#    def releaseReverse(self):
+#        self.engineSpeed = 0
+#
+#    def brake(self):
+#        pass
+#        #print "brake"
+#
+#    def releaseBrake(self):
+#        pass
+#        #print "releaseBrake"
+#
+#    def steerLeft(self):
+#        self.steeringAngle = self.max_steer_angle
+##        if self.steeringAngle < self.max_steer_angle:
+##            self.steeringAngle += self.steer_angle_step
+#
+#    def steerRight(self):
+#        self.steeringAngle = -self.max_steer_angle
+##        if self.steeringAngle > -self.max_steer_angle:
+##            self.steeringAngle -= self.steer_angle_step
+#
+#    def releaseSteering(self):
+#        self.steeringAngle = 0
+#
     def killOrthogonalVelocity(self, body):
         """ This function applies a "friction" in a direction orthogonal to the
             body's axis. """
@@ -220,49 +190,47 @@ class Agent(object):
         mspeed = self.steeringAngle - rj.angle
         rj.motorSpeed = mspeed * self.steering_speed
 
-        self.translation[0,3] = self.body.position.x
-        self.translation[1,3] = self.body.position.y
-#        print self.body.position
 
-    def drawBox(self, gl, colFill, colBorder, verts):
-        """ Vertices are presupplied, in world coordinates
-        """
-        # Kinda inefficient, but we are not worried about performance yet
-#        vertices = verts[:3] + verts[2:] + [verts[0]]
-        verticesBorder = [v for v in verts] + [verts[0]]
-        # Box
-#        gl.glColor3f(*self.colorChassis)
-#        gl.glBegin(gl.GL_TRIANGLES)
-#        for v in vertices:
+
+#    def drawBox(self, gl, colFill, colBorder, verts):
+#        """ Vertices are presupplied, in world coordinates
+#        """
+#        # Kinda inefficient, but we are not worried about performance yet
+##        vertices = verts[:3] + verts[2:] + [verts[0]]
+#        verticesBorder = [v for v in verts] + [verts[0]]
+#        # Box
+##        gl.glColor3f(*self.colorChassis)
+##        gl.glBegin(gl.GL_TRIANGLES)
+##        for v in vertices:
+##            gl.glVertex2f(*v)
+##        gl.glEnd()
+#        # Border
+#        gl.glColor3f(*self.colorBorder)
+#        gl.glBegin(gl.GL_LINE_STRIP)
+#        for v in verticesBorder:
 #            gl.glVertex2f(*v)
 #        gl.glEnd()
-        # Border
-        gl.glColor3f(*self.colorBorder)
-        gl.glBegin(gl.GL_LINE_STRIP)
-        for v in verticesBorder:
-            gl.glVertex2f(*v)
-        gl.glEnd()
-
-
-    def draw(self, gl, worldView):
-        # Display the chassis
-        self.drawBox(gl, self.colorChassis, self.colorBorder,
-             map(self.body.GetWorldPoint, self.body.fixtures[0].shape.vertices))
-        self.drawBox(gl, self.colorChassis, self.colorBorder,
-             map(self.frontLeftWheel.GetWorldPoint,
-                 self.frontLeftWheel.fixtures[0].shape.vertices))
-        self.drawBox(gl, self.colorChassis, self.colorBorder,
-             map(self.frontRightWheel.GetWorldPoint,
-                 self.frontRightWheel.fixtures[0].shape.vertices))
-        # Draw sensor field and rear wheels if not in agent view
-        if not worldView:
-            return
-        self.drawBox(gl, self.colorChassis, self.colorBorder,
-             map(self.rearLeftWheel.GetWorldPoint,
-                 self.rearLeftWheel.fixtures[0].shape.vertices))
-        self.drawBox(gl, self.colorChassis, self.colorBorder,
-             map(self.rearRightWheel.GetWorldPoint,
-                 self.rearRightWheel.fixtures[0].shape.vertices))
-        self.drawBox(gl, self.colorChassis, self.colorBorder,
-             map(self.body.GetWorldPoint,
-                 self.body.fixtures[1].shape.vertices))
+#
+#
+#    def draw(self, gl, worldView):
+#        # Display the chassis
+#        self.drawBox(gl, self.colorChassis, self.colorBorder,
+#             map(self.body.GetWorldPoint, self.body.fixtures[0].shape.vertices))
+#        self.drawBox(gl, self.colorChassis, self.colorBorder,
+#             map(self.frontLeftWheel.GetWorldPoint,
+#                 self.frontLeftWheel.fixtures[0].shape.vertices))
+#        self.drawBox(gl, self.colorChassis, self.colorBorder,
+#             map(self.frontRightWheel.GetWorldPoint,
+#                 self.frontRightWheel.fixtures[0].shape.vertices))
+#        # Draw sensor field and rear wheels if not in agent view
+#        if not worldView:
+#            return
+#        self.drawBox(gl, self.colorChassis, self.colorBorder,
+#             map(self.rearLeftWheel.GetWorldPoint,
+#                 self.rearLeftWheel.fixtures[0].shape.vertices))
+#        self.drawBox(gl, self.colorChassis, self.colorBorder,
+#             map(self.rearRightWheel.GetWorldPoint,
+#                 self.rearRightWheel.fixtures[0].shape.vertices))
+#        self.drawBox(gl, self.colorChassis, self.colorBorder,
+#             map(self.body.GetWorldPoint,
+#                 self.body.fixtures[1].shape.vertices))
