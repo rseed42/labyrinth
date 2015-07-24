@@ -127,41 +127,37 @@ class Agent(object):
 #        self.bodyVertices = np.array(vl, 'f')
 #        self.vboBody = glvbo.VBO(self.bodyVertices)
 #
-#    def accelerate(self):
-#        if self.engineSpeed < self.max_engine_speed:
-#            self.engineSpeed += self.acceleration_step
-#
-#    def releaseAccelerator(self):
-#        self.engineSpeed = 0
-#
-#    def reverse(self):
-#        if self.engineSpeed < self.reverse_engine_max_speed:
-#            self.engineSpeed -= self.reverse_engine_acc_step
-#
-#    def releaseReverse(self):
-#        self.engineSpeed = 0
-#
-#    def brake(self):
-#        pass
-#        #print "brake"
-#
-#    def releaseBrake(self):
-#        pass
-#        #print "releaseBrake"
-#
-#    def steerLeft(self):
-#        self.steeringAngle = self.max_steer_angle
-##        if self.steeringAngle < self.max_steer_angle:
-##            self.steeringAngle += self.steer_angle_step
-#
-#    def steerRight(self):
-#        self.steeringAngle = -self.max_steer_angle
-##        if self.steeringAngle > -self.max_steer_angle:
-##            self.steeringAngle -= self.steer_angle_step
-#
-#    def releaseSteering(self):
-#        self.steeringAngle = 0
-#
+    def accelerate(self):
+        if self.engineSpeed < self.max_engine_speed:
+            self.engineSpeed += self.acceleration_step
+
+    def releaseAccelerator(self):
+        self.engineSpeed = 0
+
+    def reverse(self):
+        if self.engineSpeed < self.reverse_engine_max_speed:
+            self.engineSpeed -= self.reverse_engine_acc_step
+
+    def releaseReverse(self):
+        self.engineSpeed = 0
+
+    def brake(self):
+        pass
+        #print "brake"
+
+    def releaseBrake(self):
+        pass
+        #print "releaseBrake"
+
+    def steerLeft(self):
+        self.steeringAngle = self.max_steer_angle
+
+    def steerRight(self):
+        self.steeringAngle = -self.max_steer_angle
+
+    def releaseSteering(self):
+        self.steeringAngle = 0
+
     def killOrthogonalVelocity(self, body):
         """ This function applies a "friction" in a direction orthogonal to the
             body's axis. """
