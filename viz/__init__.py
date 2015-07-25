@@ -126,34 +126,15 @@ class Visualization(object):
             self.worldView = not self.worldView
         if keysym.sym == sdl.SDLK_f:
             self.frameStats.show()
-
+        if keysym.sym == sdl.SDLK_i:
+            print self.userController.agent.body.transform.position
         # Control agent
         self.userController.keyDown(keysym.sym)
-##        if keysym.sym == sdl.SDLK_w:
-##            self.sim.userAccelerate()
-##        if keysym.sym == sdl.SDLK_k:
-##            self.sim.userReverse()
-##        if keysym.sym == sdl.SDLK_s:
-##            self.sim.userBrake()
-##        if keysym.sym == sdl.SDLK_a:
-##            self.sim.userSteerLeft()
-##        if keysym.sym == sdl.SDLK_d:
-##            self.sim.userSteerRight()
-#
+
     def on_key_up(self, keysym):
         pass
         self.userController.keyUp(keysym.sym)
-##        if keysym.sym == sdl.SDLK_w:
-##            self.sim.userReleaseAccelerator()
-##        if keysym.sym == sdl.SDLK_k:
-##            self.sim.userReleaseReverse()
-##        if keysym.sym == sdl.SDLK_s:
-##            self.sim.userReleaseBrake()
-##        if keysym.sym == sdl.SDLK_a:
-##            self.sim.userReleaseSteering()
-##        if keysym.sym == sdl.SDLK_d:
-##            self.sim.userReleaseSteering()
-#
+
     def showHelp(self):
         print '-'*40
         print ' Help'

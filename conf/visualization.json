@@ -4,7 +4,7 @@
                 "bgColor" : [0,0,0,0]
     },
     "fps": 60,
-    "runSimulationAtStart" : 0,
+    "runSimulationAtStart" : 1,
     "worldView": 1,
     "shaderDir" : "viz/shader/",
     "shaders" : {"defaultVertex":{"type":"vertex",

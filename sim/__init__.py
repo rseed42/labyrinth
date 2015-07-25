@@ -106,32 +106,5 @@ class Simulation(object):
         self.world.Step(self.timestep,
                         self.velocityIterations,
                         self.positionIterations)
-        # Handle agents
-
-
-#    def userAccelerate(self):
-#        self.user.accelerate()
-#
-#    def userReleaseAccelerator(self):
-#        self.user.releaseAccelerator()
-#
-#    def userReverse(self):
-#        self.user.reverse()
-#
-#    def userReleaseReverse(self):
-#        self.user.releaseReverse()
-#
-#    def userBrake(self):
-#        self.user.brake()
-#
-#    def userReleaseBrake(self):
-#        self.user.releaseBrake()
-#
-#    def userSteerLeft(self):
-#        self.user.steerLeft()
-#
-#    def userSteerRight(self):
-#        self.user.steerRight()
-#
-#    def userReleaseSteering(self):
-#        self.user.releaseSteering()
+        for name, agent in self.agents.items():
+            agent.update()
