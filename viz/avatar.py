@@ -21,7 +21,7 @@ class Avatar(object):
     def calculateVertices(self):
         self.visCar = visual.DynObj()
         self.visCar.setBody(self.agent.body)
-        self.visCar.color = [1,1,1,1]
+        self.visCar.color = [0.25,0.55,0.8,1]
         self.visCar.verticesFromFixtures([self.agent.body.fixtures[0]])
 
         self.visFLWheel = visual.DynObj()
@@ -36,12 +36,12 @@ class Avatar(object):
 
         self.visRLWheel = visual.DynObj()
         self.visRLWheel.setBody(self.agent.rearLeftWheel)
-        self.visRLWheel.color = [1,0,0,1]
+        self.visRLWheel.color = [.5,0,0,1]
         self.visRLWheel.verticesFromFixtures(self.agent.rearLeftWheel.fixtures)
 
         self.visRRWheel = visual.DynObj()
         self.visRRWheel.setBody(self.agent.rearRightWheel)
-        self.visRRWheel.color = [1,0,0,1]
+        self.visRRWheel.color = [.5,0,0,1]
         self.visRRWheel.verticesFromFixtures(self.agent.rearRightWheel.fixtures)
 
     def draw(self, prog):
