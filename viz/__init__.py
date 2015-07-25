@@ -10,6 +10,7 @@ import numpy as np
 import bunch
 import stats
 import renderer
+from sim import controller
 #-------------------------------------------------------------------------------
 WND_FLAGS = sdl.SDL_WINDOW_OPENGL | sdl.SDL_WINDOW_SHOWN
 #-------------------------------------------------------------------------------
@@ -32,61 +33,25 @@ class Visualization(object):
         self.bgColor = None
         # Rendering
         self.renderer = None
-#        self.mazeWallColor = None
-#        self.agentFov = None
         self.worldView = False
-#        self.uniforms = {}
-#        self.mat_model = np.identity(4, 'f')
-#        self.mat_worldProj = None
-#        self.mat_agentProj = None
-#        # Shaders
-#        self.shaderVertex = shader.Shader()
-#        self.shaderFragment = shader.Shader()
-#
+        # User Controller
+        self.userController = None
+
     def configure(self, vizCfgFilename):
         import json
         fp = file(vizCfgFilename, 'r')
         self.cfg = bunch.bunchify(json.load(fp))
         fp.close()
-#        # Load shader source
-#        self.shaderVertex.load(self.cfg.shader.shader_dir,
-#                               self.cfg.shader.vertex)
-#        self.shaderFragment.load(self.cfg.shader.shader_dir,
-#                                 self.cfg.shader.fragment)
+
         self.runSimulation = self.cfg.runSimulationAtStart
         self.targetFrameDuration = 1000./self.cfg.fps
         self.frameStats = stats.FrameStats(self.cfg.fps)
-#        self.mazeWallColor = tuple(self.cfg.color.mazeWall)
-#        self.agentFov = self.cfg.agentFov
+
         self.worldView = self.cfg.worldView
         self.width = self.cfg.window.width
         self.height = self.cfg.window.height
         self.bgColor = self.cfg.window.bgColor
-#        # World Projection Matrix
-#        self.mat_worldProj = self.projMatrix(0,self.sim.wmap.width,
-#                                             0,self.sim.wmap.height,
-#                                             -1,1)
-#        # Agent Projection Matrix
-#        self.mat_agentProj = self.projMatrix(0,40,0,30,-1,1)
-#        user = self.sim.user
-#        translation = user.body.transform.position
-#        sensorVerts = user.body.fixtures[1].shape.vertices
-##            gl.glTranslatef(sensorVerts[0][0],-(16-0.5*30),0)
-#        sensorTrans = np.identity(4,'f')
-##        sensorTrans[0,3] = sensorVerts[0][0]
-##        sensorTrans[1,3] = -(16-0.5*30)
-##        self.mat_agentProj = np.dot(self.mat_agentProj, sensorTrans)
-#
-#    def projMatrix(self,left,right,top,bottom,near,far):
-#        mat = np.identity(4, 'f')
-#        mat[0,0] = 2./(right-left)
-#        mat[0,3] = - (right+left) / (right-left)
-#        mat[1,1] = 2./(top-bottom)
-#        mat[1,3] = -(top+bottom)/(top-bottom)
-#        mat[2,2] = -2 / (far - near)
-#        mat[2,3] = - (far+near)/ (far - near)
-#        mat[3,3] = 1.
-#        return mat
+
     def init_gl(self):
         gl.glClearColor(*self.bgColor)
         gl.glClearDepth(1.0)
@@ -120,63 +85,10 @@ class Visualization(object):
                                   self.sim.dynamicObjects,
                                   self.sim.agents
         )
-
+        # Set up user controller
+        agent = self.sim.agents[self.sim.worldCfg.user]
+        self.userController = controller.UserController(agent)
         return True
-
-#    def render(self):
-#        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-#        self.renderer.render()
-##        shaders.glUseProgram(self.shader)
-##        # Global world view
-##        if self.worldView:
-##            gl.glUniformMatrix4fv(self.uniforms['mat_Proj'], 1, True,
-##                                  self.mat_worldProj)
-##        # Agent view
-##        else:
-##            user = self.sim.user
-##            pos = user.body.transform.position
-##            R = user.body.transform.R
-###            gl.glRotatef((180/np.pi)*user.body.transform.angle, 0, 0, -1)
-###            gl.glTranslatef(-translation.x,-translation.y,0)
-##            trans = np.identity(4,'f')
-###            trans[0,3] = pos.x
-###            trans[1,3] = -pos.y
-##
-##            rot = np.identity(4,'f')
-###            rot[0,0] = R.col1.x
-###            rot[0,1] = R.col2.x
-###            rot[1,0] = R.col1.y
-###            rot[1,1] = R.col2.y
-###            self.mat_agentProj = np.dot(self.mat_agentProj, rot)
-###            self.mat_agentProj = np.dot(rot, self.mat_agentProj)
-##            gl.glUniformMatrix4fv(self.uniforms['mat_Proj'], 1, True,
-##                                  self.mat_agentProj)
-##
-##        # Load static buffers
-###        gl.glColor3f(*self.mazeWallColor)
-##
-##        gl.glUniformMatrix4fv(self.uniforms['mat_ModelView'], 1, True,
-##                              self.mat_model)
-##
-##        self.vboMazeWalls.bind()
-##        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-##        gl.glVertexPointerf(self.vboMazeWalls)
-##        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.wallTriangles.size)
-##        self.vboMazeWalls.unbind()
-##        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-##
-##        # The dynamics body are rendered in a more simple way
-##        for name, agent in self.sim.getAgents().items():
-##            gl.glUniformMatrix4fv(self.uniforms['mat_ModelView'], 1, True,
-##                                  agent.translation)
-##            agent.vboBody.bind()
-##            gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-##            gl.glVertexPointerf(agent.vboBody)
-##            gl.glDrawArrays(gl.GL_TRIANGLES, 0, agent.bodyVertices.size)
-##            agent.vboBody.unbind()
-##            gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-#
-#        sdl.SDL_GL_SwapWindow(self.window)
 
     def cleanup(self):
         sdl.SDL_GL_DeleteContext(self.glcontext)
@@ -215,7 +127,8 @@ class Visualization(object):
         if keysym.sym == sdl.SDLK_f:
             self.frameStats.show()
 
-#        # Control agent
+        # Control agent
+        self.userController.keyDown(keysym.sym)
 ##        if keysym.sym == sdl.SDLK_w:
 ##            self.sim.userAccelerate()
 ##        if keysym.sym == sdl.SDLK_k:
@@ -229,6 +142,7 @@ class Visualization(object):
 #
     def on_key_up(self, keysym):
         pass
+        self.userController.keyUp(keysym.sym)
 ##        if keysym.sym == sdl.SDLK_w:
 ##            self.sim.userReleaseAccelerator()
 ##        if keysym.sym == sdl.SDLK_k:

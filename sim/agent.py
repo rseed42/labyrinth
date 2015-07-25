@@ -115,18 +115,7 @@ class Agent(object):
         self.rearRightWheel = self.addRearWheel(world, self.body,
                                                   cfg.position,
                                                   cfg.wheels.rearRight)
-#        # Create vbos
-#        vl = []
-#        vertices = self.body.fixtures[0].shape.vertices
-#        vl.append(vertices[0])
-#        vl.append(vertices[1])
-#        vl.append(vertices[2])
-#        vl.append(vertices[0])
-#        vl.append(vertices[2])
-#        vl.append(vertices[3])
-#        self.bodyVertices = np.array(vl, 'f')
-#        self.vboBody = glvbo.VBO(self.bodyVertices)
-#
+
     def accelerate(self):
         if self.engineSpeed < self.max_engine_speed:
             self.engineSpeed += self.acceleration_step
@@ -185,48 +174,3 @@ class Agent(object):
         rj = self.frontRightWheel.joints[0].joint
         mspeed = self.steeringAngle - rj.angle
         rj.motorSpeed = mspeed * self.steering_speed
-
-
-
-#    def drawBox(self, gl, colFill, colBorder, verts):
-#        """ Vertices are presupplied, in world coordinates
-#        """
-#        # Kinda inefficient, but we are not worried about performance yet
-##        vertices = verts[:3] + verts[2:] + [verts[0]]
-#        verticesBorder = [v for v in verts] + [verts[0]]
-#        # Box
-##        gl.glColor3f(*self.colorChassis)
-##        gl.glBegin(gl.GL_TRIANGLES)
-##        for v in vertices:
-##            gl.glVertex2f(*v)
-##        gl.glEnd()
-#        # Border
-#        gl.glColor3f(*self.colorBorder)
-#        gl.glBegin(gl.GL_LINE_STRIP)
-#        for v in verticesBorder:
-#            gl.glVertex2f(*v)
-#        gl.glEnd()
-#
-#
-#    def draw(self, gl, worldView):
-#        # Display the chassis
-#        self.drawBox(gl, self.colorChassis, self.colorBorder,
-#             map(self.body.GetWorldPoint, self.body.fixtures[0].shape.vertices))
-#        self.drawBox(gl, self.colorChassis, self.colorBorder,
-#             map(self.frontLeftWheel.GetWorldPoint,
-#                 self.frontLeftWheel.fixtures[0].shape.vertices))
-#        self.drawBox(gl, self.colorChassis, self.colorBorder,
-#             map(self.frontRightWheel.GetWorldPoint,
-#                 self.frontRightWheel.fixtures[0].shape.vertices))
-#        # Draw sensor field and rear wheels if not in agent view
-#        if not worldView:
-#            return
-#        self.drawBox(gl, self.colorChassis, self.colorBorder,
-#             map(self.rearLeftWheel.GetWorldPoint,
-#                 self.rearLeftWheel.fixtures[0].shape.vertices))
-#        self.drawBox(gl, self.colorChassis, self.colorBorder,
-#             map(self.rearRightWheel.GetWorldPoint,
-#                 self.rearRightWheel.fixtures[0].shape.vertices))
-#        self.drawBox(gl, self.colorChassis, self.colorBorder,
-#             map(self.body.GetWorldPoint,
-#                 self.body.fixtures[1].shape.vertices))

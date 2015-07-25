@@ -24,26 +24,7 @@ class Simulation(object):
         # World parameters
         self.width = 0
         self.height = 0
-#        self.worldLowerBound = None
-#        self.worldUpperBound = None
-#        self.wmap = None
-#        self.user = None
-#
-#    def configure(self, cfg_file):
-#        """ Configuration before the map is loaded
-#        """
-#        import json
-#        fp = file(cfg_file, 'r')
-#        self.cfg = bunch.bunchify(json.load(fp))
-#        fp.close()
-#        # Solver configuration
-#        self.timestep = self.cfg.solver.timestep
-#        self.velocityIterations = self.cfg.solver.velocityIterations
-#        self.positionIterations = self.cfg.solver.positionIterations
-#        # World configuration ---remove, this should come from the map ---
-#        self.worldLowerBound = tuple(self.cfg.world.lowerBound)
-#        self.worldUpperBound = tuple(self.cfg.world.upperBound)
-#
+
     def loadDynamicObject(self, geometry, obj):
         pass
 
@@ -65,11 +46,6 @@ class Simulation(object):
                                               density=0)
         body.userData = obj
         obj.setBody(body)
-
-    def setupUserAgent(self):
-        """ Is to be called from the viz app only
-        """
-        pass
 
     def load(self, worldCfgFilename):
         # Load world map
@@ -101,6 +77,7 @@ class Simulation(object):
             self.agents[name] = agent.Agent(name)
             self.agents[name].construct(self.world, agentCfg)
 
+#        self.userControl(self.agents
 #        # Set up oevent handling
 #        self.contactListener = WorldContactListener(self.user)
 #        self.world.contactListener = self.contactListener
