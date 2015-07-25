@@ -73,13 +73,21 @@ class DynObj(VisObj):
         """
         # Update the translation and rotation matrices
         trafo = self.body.transform
-        self.translation[0,3] = trafo.position[0]
-        self.translation[1,3] = trafo.position[1]
+        # Later: Make the multiplication in the shader for better efficiency!
+        self.translation[0,3] = self.body.transform.position[0]
+        self.translation[1,3] = self.body.transform.position[1]
 
-        prog.setUniform('mat_ModelView', self.translation)
+        # Possible b2 bug
+        self.rotation[0,0] = np.cos(trafo.R.angle)
+        self.rotation[0,1] = self.body.transform.R.col2.x
+        self.rotation[1,0] = np.sin(trafo.R.angle)
+        self.rotation[1,1] = self.body.transform.R.col2.y
+
+#        print self.rotation[:2,:2]
+        # Very strange. This should not be empty like that. Possibly a bug?
+#        print self.body.transform.R.col1
+#        print self.body.transform.R.col2
+
+        prog.setUniform('mat_ModelView',
+                        np.dot(self.translation,self.rotation))
         super(DynObj, self).draw(prog)
-#        prog.setUniform('vec_Color', self.color)
-#        self.vbo.bind()
-#        gl.glVertexPointerf(self.vbo)
-#        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.vertices.size)
-#        self.vbo.unbind()

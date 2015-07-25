@@ -139,10 +139,10 @@ class Agent(object):
         #print "releaseBrake"
 
     def steerLeft(self):
-        self.steeringAngle = self.max_steer_angle
+        self.steeringAngle = -self.max_steer_angle
 
     def steerRight(self):
-        self.steeringAngle = -self.max_steer_angle
+        self.steeringAngle = self.max_steer_angle
 
     def releaseSteering(self):
         self.steeringAngle = 0

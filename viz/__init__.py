@@ -127,7 +127,7 @@ class Visualization(object):
         if keysym.sym == sdl.SDLK_f:
             self.frameStats.show()
         if keysym.sym == sdl.SDLK_i:
-            print self.userController.agent.body.transform.position
+            pass
         # Control agent
         self.userController.keyDown(keysym.sym)
 
