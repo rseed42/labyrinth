@@ -111,6 +111,7 @@ class Visualization(object):
         self.init_gl()
         # Renderer
         self.renderer = renderer.Renderer()
+        self.renderer.setProjection(self.sim.width, self.sim.height)
         self.renderer.loadShaders(self.cfg.shaderDir,
                                   self.cfg.shaders,
                                   self.cfg.programs)
@@ -119,6 +120,7 @@ class Visualization(object):
                                   self.sim.dynamicObjects,
                                   self.sim.agents
         )
+
         return True
 
 #    def render(self):

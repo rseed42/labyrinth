@@ -9,8 +9,7 @@ class Shader(object):
         self.type = None
         self.src = None
         self.shaderId = 0
-        self.uniforms = bunch.Bunch()
-        # Create shader
+        self.uniforms = None
 
     def load(self, shaderDir, cfg):
         # Init type of shader
@@ -34,10 +33,10 @@ class Shader(object):
         if result != 1:
             sys.stderr.write(gl.glGetShaderInfoLog(self.shaderId)+'\n')
 
-    def mapUniformLocations(self, programId):
-        """ This function must be called only after the shaders has been attached
-            to the program
-        """
-        for name, u in self.uniforms.items():
-            # Be careful! JSON Strings are unicode
-            u.loc = gl.glGetUniformLocation(programId, str(name)),
+#    def mapUniformLocations(self, programId):
+#        """ This function must be called only after the shaders has been attached
+#            to the program
+#        """
+#        for name, u in self.uniforms.items():
+#            # Be careful! JSON Strings are unicode
+#            u.loc = gl.glGetUniformLocation(programId, str(name)),

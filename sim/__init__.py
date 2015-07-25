@@ -82,7 +82,7 @@ class Simulation(object):
         self.positionIterations = self.worldCfg.solver.positionIterations
         # Load world geometry
         fp = file(self.worldCfg.geometryFilename, 'rb')
-        geometry = np.flipud(np.load(fp)).transpose()
+        geometry = np.load(fp).transpose()
         fp.close()
         # Set world parameters
         self.width, self.height = geometry.shape

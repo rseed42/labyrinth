@@ -1,4 +1,5 @@
 import OpenGL.GL as gl
+import bunch
 #-------------------------------------------------------------------------------
 # Shader Proogram
 #-------------------------------------------------------------------------------
@@ -6,6 +7,7 @@ class ShaderProgram(object):
     def __init__(self):
         self.programId = gl.glCreateProgram()
         self.attachedShaders = {}
+        self.uniforms = bunch.Bunch()
 
     def link(self):
         gl.glLinkProgram(self.programId)
@@ -19,8 +21,13 @@ class ShaderProgram(object):
         self.attachedShaders.pop(name)
 
     def mapUniformLocations(self):
+        """ Aggregate the uniform locations from the shaders
+        """
         for name, shader in self.attachedShaders.items():
-            shader.mapUniformLocations(self.programId)
+            for name, u in shader.uniforms.items():
+                # Be careful! JSON Strings are unicode
+                u.loc = gl.glGetUniformLocation(self.programId, str(name))
+                self.uniforms[name] = u
 
     def use(self):
         try:

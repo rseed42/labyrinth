@@ -1,7 +1,6 @@
 import sdl2 as sdl
 import OpenGL.GL as gl
-import OpenGL.GLU as glu
-import OpenGL.arrays.vbo as glvbo
+import numpy as np
 import shader
 import shaderprogram
 import bunch
@@ -16,6 +15,8 @@ class Renderer(object):
         self.visStatic = {}
         self.visDynamic = {}
         self.visAgents = {}
+        self.matMV = np.identity(4,'f')
+        self.matProj = None
 
     def loadShaders(self, shaderDir, cfgShaders, cfgPrograms):
         # Load shaders
@@ -34,6 +35,20 @@ class Renderer(object):
             self.programs[name].link()
             self.programs[name].mapUniformLocations()
 
+    def projMatrix(self,left,right,top,bottom,near,far):
+        mat = np.identity(4, 'f')
+        mat[0,0] = 2./(right-left)
+        mat[0,3] = - (right+left) / (right-left)
+        mat[1,1] = 2./(top-bottom)
+        mat[1,3] = -(top+bottom)/(top-bottom)
+        mat[2,2] = -2 / (far - near)
+        mat[2,3] = - (far+near)/ (far - near)
+        mat[3,3] = 1.
+        return mat
+
+    def setProjection(self, width, height):
+        self.matProj = self.projMatrix(0,width, 0,height, -1,1)
+
     def initVisuals(self, cfg, staticObjects, dynamicObjects, agents):
         """ Because we want to completely decouple the visualization
             from the simulation, we can reference the objects in the
@@ -42,10 +57,11 @@ class Renderer(object):
             as the names in the world map file.
         """
         for name, sObj in staticObjects.items():
-            pass
- #           visCfg = cfg.static.get(name)
-#            print sObj.name
-#            print sObj.body.fixtures
+            # Visual configuration for this object
+            visCfg = cfg.static.get(name)
+            vObj = visual.StaticObj()
+            self.visStatic[name] = vObj
+            vObj.verticesFromFixtures(sObj.body.fixtures)
 
 #        for name, dObj in dynamicsObjects.items():
 #            print name
@@ -59,8 +75,23 @@ class Renderer(object):
     def render(self, window):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # Render scene
-        # Need which program to use
-#        self.programs['default'].use()
-#        gl.glUseProgram(0)
+        # Currently using the same shaders for all objects
+        prog = self.programs['default']
+        prog.use()
+        # Set Projection Matrix
+        u=prog.uniforms['mat_Proj']
+        gl.glUniformMatrix4fv(u.loc, 1, True, self.matProj)
+        u =prog.uniforms['mat_ModelView']
+        gl.glUniformMatrix4fv(u.loc, 1, True, self.matMV)
+        # Render static objects
+        for name, vObj in self.visStatic.items():
+            # Set static uniforms if necessary
+            vObj.vbo.bind()
+            gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
+            gl.glVertexPointerf(vObj.vbo)
+            gl.glDrawArrays(gl.GL_TRIANGLES, 0, vObj.vertices.size)
+            vObj.vbo.unbind()
+            gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+        gl.glUseProgram(0)
         #
         sdl.SDL_GL_SwapWindow(window)
