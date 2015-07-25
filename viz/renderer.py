@@ -5,6 +5,7 @@ import shader
 import shaderprogram
 import bunch
 import visual
+import avatar
 #-------------------------------------------------------------------------------
 # Renderer
 #-------------------------------------------------------------------------------
@@ -67,8 +68,13 @@ class Renderer(object):
 #        for name, dObj in dynamicsObjects.items():
 #            print name
 
-#        for name, agents in agents.items():
-#            print name
+        for name, agent in agents.items():
+            agtCfg = cfg.agents.get(name)
+            av = avatar.Avatar()
+            av.configure(agtCfg)
+            self.visAgents[name] = av
+            av.setAgent(agent)
+            av.calculateVertices()
 
 #        print self.programs['default'].uniforms['vec_Color']
 
@@ -89,9 +95,10 @@ class Renderer(object):
         for name, vObj in self.visStatic.items():
             vObj.draw(prog)
 
+        for name, ag in self.visAgents.items():
+            ag.draw(prog)
+
         gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
-
-
 
         gl.glUseProgram(0)
         #

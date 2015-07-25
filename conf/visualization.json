@@ -26,6 +26,7 @@
                          "obstacle":{"color":[0,0,1,0.2]}
                },
             "dynamics":{},
-            "agents":{}
+               "agents":{"robocar":{"color":[0,0,1,1]}
+                         }
     }
 }

@@ -22,7 +22,6 @@ class VisObj(object):
         count = len(fixtures)
         # The simulation uses 4 vertices per tile.
         # We need 6 vertices per tile (2 triangles per tile).
-        hop = 4
         self.vertices = np.zeros((6*count, 3), 'f')
         for i in xrange(count):
             vertices = fixtures[i].shape.vertices
@@ -37,8 +36,8 @@ class VisObj(object):
 #                self.vertices[i*6+j+3, :2] = vertices[j+1]
 #                self.vertices[i*2+1, j] = fixtures[i].shape.vertices[j+1]
 #            self.vertices[i*2, 0] = self.vertices[i*2,0]
-        self.vbo = vbo.VBO(self.vertices, usage=gl.GL_STATIC_DRAW)
-        print self.color
+#        self.vbo = vbo.VBO(self.vertices, usage=gl.GL_STATIC_DRAW)
+        self.vbo = vbo.VBO(self.vertices)
 
     def draw(self, prog):
         """ The prog reference is used to pass object-specific uniform values
@@ -54,12 +53,33 @@ class StaticObj(VisObj):
     def __init__(self):
         super(StaticObj, self).__init__()
 #-------------------------------------------------------------------------------
-#class VisObj(object):
-#    def __init__(self):
-#        pass
-#
-#-------------------------------------------------------------------------------
-#class VisObj(object):
-#    def __init__(self):
-#        pass
-#
+class DynObj(VisObj):
+    def __init__(self):
+        super(DynObj, self).__init__()
+        self.translation = np.identity(4,'f')
+        self.rotation = np.identity(4,'f')
+        self.body = None
+
+    def setBody(self, body):
+        self.body = body
+
+    def setVertices(self, vertices):
+        """ vertices must define an (N,3) array with float32 types
+        """
+        self.vbo = vbo.VBO(vertices)
+
+    def draw(self, prog):
+        """ The prog reference is used to pass object-specific uniform values
+        """
+        # Update the translation and rotation matrices
+        trafo = self.body.transform
+        self.translation[0,3] = trafo.position[0]
+        self.translation[1,3] = trafo.position[1]
+
+        prog.setUniform('mat_ModelView', self.translation)
+        super(DynObj, self).draw(prog)
+#        prog.setUniform('vec_Color', self.color)
+#        self.vbo.bind()
+#        gl.glVertexPointerf(self.vbo)
+#        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.vertices.size)
+#        self.vbo.unbind()
