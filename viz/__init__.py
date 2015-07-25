@@ -20,7 +20,7 @@ class Visualization(object):
     def __init__(self, simulation):
         # Simulation
         self.sim = simulation
-        self.runSimulation = True
+        self.runSimulation = False
         self.running = True
         self.targetFrameDuration = 0
         # Statistics
@@ -55,7 +55,7 @@ class Visualization(object):
 #                               self.cfg.shader.vertex)
 #        self.shaderFragment.load(self.cfg.shader.shader_dir,
 #                                 self.cfg.shader.fragment)
-#        # Set up configuration (override initialized vars if necessary)
+        self.runSimulation = self.cfg.runSimulationAtStart
         self.targetFrameDuration = 1000./self.cfg.fps
 #        self.mazeWallColor = tuple(self.cfg.color.mazeWall)
 #        self.agentFov = self.cfg.agentFov
@@ -214,6 +214,11 @@ class Visualization(object):
 #            self.runSimulation = False
 #            self.sim.reset()
 #            self.runSimulation = True
+        if keysym.sym == sdl.SDLK_p:
+            self.runSimulation = not self.runSimulation
+            print '-'*40
+            print "Run Simulation: ", self.runSimulation
+
         if keysym.sym == sdl.SDLK_h:
             self.showHelp()
 #        if keysym.sym == sdl.SDLK_g:
@@ -221,7 +226,7 @@ class Visualization(object):
         if keysym.sym == sdl.SDLK_f:
             self.showFrameStat()
             # print fps stats
-#
+
 #        # Control agent
 ##        if keysym.sym == sdl.SDLK_w:
 ##            self.sim.userAccelerate()
@@ -253,6 +258,7 @@ class Visualization(object):
         print '-'*40
         print 'q: Quit'
         print 'r: Reset'
+        print 'p: Start/Pause simulation (toggle)'
         print 'g: Switch world view/agent view'
         print '-'*40
         print 'w: Accelerate'
