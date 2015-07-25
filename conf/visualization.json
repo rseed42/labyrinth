@@ -1,11 +1,9 @@
 {
     "window": { "width" : 600, "height": 600, "title": "Interactive Visualization"},
-    "window_": { "width" : 800, "height": 600, "title": "Interactive Visualization"},
+    "bgColor" : [0,0,0,0],
     "fps": 60,
     "runSimulationAtStart" : 0,
     "gl":{},
-    "color": {"background" : [0,0,0,0],
-              "mazeWall": [0,0.15,1]},
     "agentFov": [16, 10],
     "worldView": 1,
     "shader" : {"shader_dir":"viz/shader/",

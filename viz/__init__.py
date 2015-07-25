@@ -31,7 +31,7 @@ class Visualization(object):
         self.height = 0
         self.window = None
         self.glcontext = None
-
+        self.bgColor = None
 
         # Rendering
 #        self.mazeWallColor = None
@@ -62,6 +62,7 @@ class Visualization(object):
         self.worldView = self.cfg.worldView
         self.width = self.cfg.window.width
         self.height = self.cfg.window.height
+        self.bgColor = self.cfg.bgColor
 #        # World Projection Matrix
 #        self.mat_worldProj = self.projMatrix(0,self.sim.wmap.width,
 #                                             0,self.sim.wmap.height,
@@ -106,7 +107,7 @@ class Visualization(object):
 ##                                                           'mat_Test')
 #
     def init_gl(self):
-        gl.glClearColor(*self.cfg.color.background)
+        gl.glClearColor(*self.bgColor)
         gl.glClearDepth(1.0)
         gl.glEnable(gl.GL_TEXTURE_2D)
         gl.glViewport(0,0,self.width, self.height)
