@@ -8,10 +8,13 @@ import OpenGL.arrays.vbo as glvbo
 from OpenGL.GL import shaders
 import numpy as np
 import bunch
-#import shader
+import stats
 import renderer
 #-------------------------------------------------------------------------------
 WND_FLAGS = sdl.SDL_WINDOW_OPENGL | sdl.SDL_WINDOW_SHOWN
+#-------------------------------------------------------------------------------
+# Visualization Application
+#-------------------------------------------------------------------------------
 class Visualization(object):
     def __init__(self, simulation):
         # Simulation
@@ -19,9 +22,8 @@ class Visualization(object):
         self.runSimulation = False
         self.running = True
         self.targetFrameDuration = 0
-        # Statistics
-        self.frameCount = 0
-        self.frameDurationSum = 0
+        # Frame Rate Statistics
+        self.frameStats = None
         # Window
         self.width = 0
         self.height = 0
@@ -53,6 +55,7 @@ class Visualization(object):
 #                                 self.cfg.shader.fragment)
         self.runSimulation = self.cfg.runSimulationAtStart
         self.targetFrameDuration = 1000./self.cfg.fps
+        self.frameStats = stats.FrameStats(self.cfg.fps)
 #        self.mazeWallColor = tuple(self.cfg.color.mazeWall)
 #        self.agentFov = self.cfg.agentFov
         self.worldView = self.cfg.worldView
@@ -204,7 +207,7 @@ class Visualization(object):
         if keysym.sym == sdl.SDLK_g:
             self.worldView = not self.worldView
         if keysym.sym == sdl.SDLK_f:
-            self.showFrameStat()
+            self.frameStats.show()
 
 #        # Control agent
 ##        if keysym.sym == sdl.SDLK_w:
@@ -247,18 +250,10 @@ class Visualization(object):
         print 'd: Turn right'
         print 'f: Frame statistics'
 
-    def showFrameStat(self):
-        print '-'*40
-        print ' Frame Statistics'
-        print '-'*40
-        print 'Target FPS: %.1f' % self.cfg.fps
-        print 'Target Frame Duration: %.2f ms' % self.targetFrameDuration
-        print 'Frame Count: %d' % self.frameCount
-        print 'Frame Duration Sum: %.2f ms %.2f s' % (self.frameDurationSum,
-                                                      self.frameDurationSum/1000.)
-        print 'Mean Frame Duration: %.2f ms' % (float(self.frameDurationSum) / self.frameCount)
 
     def start(self):
+        """ Main application loop
+        """
         if not self.initialize():
             # Log error instead
 #            sys.stderr.write(msg.viz_gl_init_fail+msg.newline)
@@ -268,15 +263,26 @@ class Visualization(object):
             events = sdlx.get_events()
             for event in events:
                 self.process_event(event)
-            # Only run the simulation if allowed
-            if self.runSimulation:
-                self.sim.step()
-#            self.render()
+            eventsEnd = sdl.SDL_GetTicks()
+            self.frameStats.inputSum += eventsEnd - frameStart
+            # Simulate
+            if self.runSimulation: self.sim.step()
+            simEnd = sdl.SDL_GetTicks()
+            self.frameStats.simulationSum += simEnd - eventsEnd
             self.renderer.render(self.window)
-            frameDuration = sdl.SDL_GetTicks() - frameStart
-            self.frameCount += 1
-            self.frameDurationSum += frameDuration
+            renderEnd = sdl.SDL_GetTicks()
+            self.frameStats.renderSum += renderEnd - simEnd
+            # Agents calculations
+            # (a1, a2, ...)
+            agentsEnd = sdl.SDL_GetTicks()
+            self.frameStats.agentSum += agentsEnd - renderEnd
+            # Calculate compensation for the frame rate
+            self.frameStats.count += 1
+            frameDuration = agentsEnd - frameStart
+            self.frameStats.totalSum += frameDuration
+            delay = int(self.targetFrameDuration - frameDuration)
+            self.frameStats.delaySum += delay
             if frameDuration < self.targetFrameDuration:
-                sdl.SDL_Delay(int(self.targetFrameDuration - frameDuration))
+                sdl.SDL_Delay(delay)
         self.cleanup()
         sys.exit(0)
