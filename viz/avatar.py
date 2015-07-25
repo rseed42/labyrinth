@@ -9,6 +9,8 @@ class Avatar(object):
         self.visCar = None
         self.visFLWheel = None
         self.visFRWheel = None
+        self.visRLWheel = None
+        self.visRRWheel = None
 
     def configure(self, cfg):
         pass
@@ -32,9 +34,21 @@ class Avatar(object):
         self.visFRWheel.color = [1,0,0,1]
         self.visFRWheel.verticesFromFixtures(self.agent.frontRightWheel.fixtures)
 
+        self.visRLWheel = visual.DynObj()
+        self.visRLWheel.setBody(self.agent.rearLeftWheel)
+        self.visRLWheel.color = [1,0,0,1]
+        self.visRLWheel.verticesFromFixtures(self.agent.rearLeftWheel.fixtures)
+
+        self.visRRWheel = visual.DynObj()
+        self.visRRWheel.setBody(self.agent.rearRightWheel)
+        self.visRRWheel.color = [1,0,0,1]
+        self.visRRWheel.verticesFromFixtures(self.agent.rearRightWheel.fixtures)
+
     def draw(self, prog):
         """ Overrides the default function
         """
         self.visCar.draw(prog)
         self.visFLWheel.draw(prog)
         self.visFRWheel.draw(prog)
+        self.visRLWheel.draw(prog)
+        self.visRRWheel.draw(prog)
