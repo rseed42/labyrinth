@@ -15,7 +15,7 @@ class Renderer(object):
         self.visStatic = {}
         self.visDynamic = {}
         self.visAgents = {}
-        self.matMV = np.identity(4,'f')
+        self.matModelView = np.identity(4,'f')
         self.matProj = None
 
     def loadShaders(self, shaderDir, cfgShaders, cfgPrograms):
@@ -60,6 +60,7 @@ class Renderer(object):
             # Visual configuration for this object
             visCfg = cfg.static.get(name)
             vObj = visual.StaticObj()
+            vObj.configure(visCfg)
             self.visStatic[name] = vObj
             vObj.verticesFromFixtures(sObj.body.fixtures)
 
@@ -68,6 +69,8 @@ class Renderer(object):
 
 #        for name, agents in agents.items():
 #            print name
+
+#        print self.programs['default'].uniforms['vec_Color']
 
     def createAvatar(self):
         pass
@@ -79,19 +82,17 @@ class Renderer(object):
         prog = self.programs['default']
         prog.use()
         # Set Projection Matrix
-        u=prog.uniforms['mat_Proj']
-        gl.glUniformMatrix4fv(u.loc, 1, True, self.matProj)
-        u =prog.uniforms['mat_ModelView']
-        gl.glUniformMatrix4fv(u.loc, 1, True, self.matMV)
-        # Render static objects
+        prog.setUniform('mat_ModelView', self.matModelView)
+        prog.setUniform('mat_Proj', self.matProj)
+        # Render static objects in one go
+        gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
         for name, vObj in self.visStatic.items():
-            # Set static uniforms if necessary
-            vObj.vbo.bind()
-            gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
-            gl.glVertexPointerf(vObj.vbo)
-            gl.glDrawArrays(gl.GL_TRIANGLES, 0, vObj.vertices.size)
-            vObj.vbo.unbind()
-            gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+            vObj.draw(prog)
+
+        gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
+
+
+
         gl.glUseProgram(0)
         #
         sdl.SDL_GL_SwapWindow(window)

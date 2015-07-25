@@ -15,14 +15,14 @@
                  },
                  "defaultFragment":{"type":"fragment",
                                     "filename":"fragment.shader",
-                                    "uniforms":{
+                                    "uniforms":{"vec_Color":{"type":"vec4"}
                                     }
                  }
     },
     "programs" : {"default": {"shaderNames":["defaultVertex","defaultFragment"]
                  }
     },
-    "visuals":{"static":{"wall":{"color":[0.5,0,0]}
+    "visuals":{"static":{"wall":{"color":[0.5,0.3,0.0,0.3]}
                },
             "dynamics":{},
             "agents":{}

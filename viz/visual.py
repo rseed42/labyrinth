@@ -1,5 +1,4 @@
 import OpenGL.GL as gl
-#import OpenGL.GLU as glu
 import OpenGL.arrays.vbo as vbo
 import numpy as np
 #-------------------------------------------------------------------------------
@@ -10,6 +9,9 @@ class VisObj(object):
         self.vbo = None
         self.color = None
         self.vertices = None
+
+    def configure(self, cfg):
+        self.color = cfg.color
 
     def verticesFromFixtures(self, fixtures):
         """ Creates vertices from fixtures. Default behaviour assumes that
@@ -36,6 +38,16 @@ class VisObj(object):
 #                self.vertices[i*2+1, j] = fixtures[i].shape.vertices[j+1]
 #            self.vertices[i*2, 0] = self.vertices[i*2,0]
         self.vbo = vbo.VBO(self.vertices, usage=gl.GL_STATIC_DRAW)
+        print self.color
+
+    def draw(self, prog):
+        """ The prog reference is used to pass object-specific uniform values
+        """
+        prog.setUniform('vec_Color', self.color)
+        self.vbo.bind()
+        gl.glVertexPointerf(self.vbo)
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.vertices.size)
+        self.vbo.unbind()
 
 #-------------------------------------------------------------------------------
 class StaticObj(VisObj):

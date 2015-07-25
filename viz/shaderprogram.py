@@ -1,6 +1,11 @@
 import OpenGL.GL as gl
 import bunch
 #-------------------------------------------------------------------------------
+# The API is not completely unified, so we need to account for some differences
+# with a lambda
+UNI_MAP = {'mat4': lambda l,c,v : gl.glUniformMatrix4fv(l,c,True, v),
+           'vec4':gl.glUniform4fv}
+#-------------------------------------------------------------------------------
 # Shader Proogram
 #-------------------------------------------------------------------------------
 class ShaderProgram(object):
@@ -34,3 +39,10 @@ class ShaderProgram(object):
             gl.glUseProgram(self.programId)
         except OpenGL.error.GLError:
             sys.stderr.write(gl.glGetProgramInfoLog(self.programId)+'\n')
+
+    def setUniform(self, name, val):
+        """ Automatically detect the type of uniform and use the proper
+            function for it.
+        """
+        u = self.uniforms[name]
+        UNI_MAP[u.type](u.loc, 1, val)
