@@ -134,28 +134,6 @@ class Visualization(object):
         self.init_gl()
         return True
 
-    def start(self):
-        if not self.initialize():
-            # Log error instead
-#            sys.stderr.write(msg.viz_gl_init_fail+msg.newline)
-            sys.exit(1)
-        while self.running:
-            frameStart = sdl.SDL_GetTicks()
-            events = sdlx.get_events()
-            for event in events:
-                self.process_event(event)
-            # Only run the simulation if allowed
-            if self.runSimulation:
-                self.sim.step()
-            self.render()
-            frameDuration = sdl.SDL_GetTicks() - frameStart
-            self.frameCount += 1
-            self.frameDurationSum += frameDuration
-            if frameDuration < self.targetFrameDuration:
-                sdl.SDL_Delay(int(self.targetFrameDuration - frameDuration))
-        self.cleanup()
-        sys.exit(0)
-
     def render(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 ##        shaders.glUseProgram(self.shader)
@@ -237,11 +215,11 @@ class Visualization(object):
 #            self.sim.reset()
 #            self.runSimulation = True
         if keysym.sym == sdl.SDLK_h:
-            self.show_help()
+            self.showHelp()
 #        if keysym.sym == sdl.SDLK_g:
 #            self.worldView = not self.worldView
         if keysym.sym == sdl.SDLK_f:
-            pass
+            self.showFrameStat()
             # print fps stats
 #
 #        # Control agent
@@ -269,7 +247,7 @@ class Visualization(object):
 ##        if keysym.sym == sdl.SDLK_d:
 ##            self.sim.userReleaseSteering()
 #
-    def show_help(self):
+    def showHelp(self):
         print '-'*40
         print ' Help'
         print '-'*40
@@ -282,3 +260,37 @@ class Visualization(object):
         print 's: Brake'
         print 'a: Turn left'
         print 'd: Turn right'
+        print 'f: Frame statistics'
+
+    def showFrameStat(self):
+        print '-'*40
+        print ' Frame Statistics'
+        print '-'*40
+        print 'Target FPS: %.1f' % self.cfg.fps
+        print 'Target Frame Duration: %.2f ms' % self.targetFrameDuration
+        print 'Frame Count: %d' % self.frameCount
+        print 'Frame Duration Sum: %.2f ms %.2f s' % (self.frameDurationSum,
+                                                      self.frameDurationSum/1000.)
+        print 'Mean Frame Duration: %.2f ms' % (float(self.frameDurationSum) / self.frameCount)
+
+    def start(self):
+        if not self.initialize():
+            # Log error instead
+#            sys.stderr.write(msg.viz_gl_init_fail+msg.newline)
+            sys.exit(1)
+        while self.running:
+            frameStart = sdl.SDL_GetTicks()
+            events = sdlx.get_events()
+            for event in events:
+                self.process_event(event)
+            # Only run the simulation if allowed
+            if self.runSimulation:
+                self.sim.step()
+            self.render()
+            frameDuration = sdl.SDL_GetTicks() - frameStart
+            self.frameCount += 1
+            self.frameDurationSum += frameDuration
+            if frameDuration < self.targetFrameDuration:
+                sdl.SDL_Delay(int(self.targetFrameDuration - frameDuration))
+        self.cleanup()
+        sys.exit(0)
