@@ -1,8 +1,5 @@
 import sys
 import OpenGL.GL as gl
-import OpenGL.GLU as glu
-import OpenGL.arrays.vbo as glvbo
-#from OpenGL.GL import shaders
 import bunch
 #-------------------------------------------------------------------------------
 # Shader

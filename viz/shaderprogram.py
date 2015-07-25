@@ -1,17 +1,12 @@
 import OpenGL.GL as gl
-import OpenGL.GLU as glu
-import OpenGL.arrays.vbo as glvbo
-#from OpenGL.GL import shaders
 #-------------------------------------------------------------------------------
-# Shader Program
+# Shader Proogram
 #-------------------------------------------------------------------------------
 class ShaderProgram(object):
     def __init__(self):
         self.programId = gl.glCreateProgram()
         self.attachedShaders = {}
 
-#    def compile(self):
-#        shaders.compileProgram()
     def link(self):
         gl.glLinkProgram(self.programId)
 

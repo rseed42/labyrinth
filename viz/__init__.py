@@ -13,11 +13,6 @@ import renderer
 #-------------------------------------------------------------------------------
 WND_FLAGS = sdl.SDL_WINDOW_OPENGL | sdl.SDL_WINDOW_SHOWN
 class Visualization(object):
-    """ Interactive visualization of the simulation. Default mode is to display the
-    field of view of the agent. Further modes like top-down view of the whole
-    world will be added. The simulation here is stepped, based on the frame rate.
-    In the first implementation the frame rate is fixed to 60 fps.
-    """
     def __init__(self, simulation):
         # Simulation
         self.sim = simulation
@@ -89,24 +84,6 @@ class Visualization(object):
 #        mat[2,3] = - (far+near)/ (far - near)
 #        mat[3,3] = 1.
 #        return mat
-#
-#    def loadShaders(self, gl):
-#        pass
-##        vertex_shader = shaders.compileShader(VERTEX_SHADER,
-##                                              gl.GL_VERTEX_SHADER)
-##        fragment_shader = shaders.compileShader(FRAGMENT_SHADER,
-##                                                gl.GL_FRAGMENT_SHADER)
-##        self.shader = shaders.compileProgram(vertex_shader, fragment_shader)
-##
-##        # Pass the transformation matrix
-##        self.uniforms['mat_ModelView'] =  gl.glGetUniformLocation(self.shader,
-##                                                                  'mat_ModelView')
-##        self.uniforms['mat_Proj'] =  gl.glGetUniformLocation(self.shader,
-##                                                             'mat_Proj')
-##
-##        self.uniforms['mat_Test'] = gl.glGetUniformLocation(self.shader,
-##                                                           'mat_Test')
-#
     def init_gl(self):
         gl.glClearColor(*self.bgColor)
         gl.glClearDepth(1.0)

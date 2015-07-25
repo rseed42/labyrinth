@@ -2,7 +2,6 @@ import sdl2 as sdl
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
 import OpenGL.arrays.vbo as glvbo
-#from OpenGL.GL import shaders
 import shader
 import shaderprogram
 import bunch
@@ -29,12 +28,7 @@ class Renderer(object):
                 self.programs[name].attachShader(shaderName,s)
             # Link the program
             self.programs[name].link()
-            #gl.glGetProgramiv(self.programs[name].programId, gl.GL_LINK_STATUS)
             self.programs[name].mapUniformLocations()
-#            print gl.glGetUniformLocation(self.programs[name].programId,
-#                                     'mat_Proj')
-#            print self.programs[name].programId
-
 
     def initVisuals(self, sim):
         pass
@@ -46,9 +40,9 @@ class Renderer(object):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # Render scene
         # Need which program to use
-#        self.programs['default'].use()
+        self.programs['default'].use()
 
 
-#        gl.glUseProgram(0)
+        gl.glUseProgram(0)
         #
         sdl.SDL_GL_SwapWindow(window)
