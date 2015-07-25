@@ -22,7 +22,8 @@
     "programs" : {"default": {"shaderNames":["defaultVertex","defaultFragment"]
                  }
     },
-    "visuals":{"static":{"wall":{"color":[0.5,0.3,0.0,0.3]}
+    "visuals":{"static":{"wall":{"color":[0.5,0.3,0.0,0.3]},
+                         "obstacle":{"color":[0,0,1,0.2]}
                },
             "dynamics":{},
             "agents":{}
