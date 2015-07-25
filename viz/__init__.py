@@ -8,7 +8,8 @@ import OpenGL.arrays.vbo as glvbo
 from OpenGL.GL import shaders
 import numpy as np
 import bunch
-import shader
+#import shader
+import renderer
 #-------------------------------------------------------------------------------
 WND_FLAGS = sdl.SDL_WINDOW_OPENGL | sdl.SDL_WINDOW_SHOWN
 class Visualization(object):
@@ -32,8 +33,8 @@ class Visualization(object):
         self.window = None
         self.glcontext = None
         self.bgColor = None
-
         # Rendering
+        self.renderer = None
 #        self.mazeWallColor = None
 #        self.agentFov = None
         self.worldView = False
@@ -62,7 +63,7 @@ class Visualization(object):
         self.worldView = self.cfg.worldView
         self.width = self.cfg.window.width
         self.height = self.cfg.window.height
-        self.bgColor = self.cfg.bgColor
+        self.bgColor = self.cfg.window.bgColor
 #        # World Projection Matrix
 #        self.mat_worldProj = self.projMatrix(0,self.sim.wmap.width,
 #                                             0,self.sim.wmap.height,
@@ -111,11 +112,6 @@ class Visualization(object):
         gl.glClearDepth(1.0)
         gl.glEnable(gl.GL_TEXTURE_2D)
         gl.glViewport(0,0,self.width, self.height)
-        # Load shaders
-#        self.loadShaders(gl)
-        # Load static map for the maze walls
-#        self.wallTriangles = self.sim.wmap.generateWallTriangles()
-#        self.vboMazeWalls = glvbo.VBO(self.wallTriangles)
 
     def initialize(self):
         if sdl.SDL_Init(sdl.SDL_INIT_EVERYTHING) < 0:
@@ -130,13 +126,20 @@ class Visualization(object):
                                            WND_FLAGS
         )
         if not self.window: return False
-        self.glcontect = sdl.SDL_GL_CreateContext(self.window)
+        self.glcontext = sdl.SDL_GL_CreateContext(self.window)
         # Open GL
         self.init_gl()
+        # Renderer
+        self.renderer = renderer.Renderer()
+        self.renderer.loadShaders(self.cfg.shaderDir,
+                                  self.cfg.shaders,
+                                  self.cfg.programs)
+        self.renderer.initVisuals(self.sim)
         return True
 
-    def render(self):
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+#    def render(self):
+#        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+#        self.renderer.render()
 ##        shaders.glUseProgram(self.shader)
 ##        # Global world view
 ##        if self.worldView:
@@ -187,8 +190,7 @@ class Visualization(object):
 ##            agent.vboBody.unbind()
 ##            gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
 #
-
-        sdl.SDL_GL_SwapWindow(self.window)
+#        sdl.SDL_GL_SwapWindow(self.window)
 
     def cleanup(self):
         sdl.SDL_GL_DeleteContext(self.glcontext)
@@ -222,11 +224,10 @@ class Visualization(object):
 
         if keysym.sym == sdl.SDLK_h:
             self.showHelp()
-#        if keysym.sym == sdl.SDLK_g:
-#            self.worldView = not self.worldView
+        if keysym.sym == sdl.SDLK_g:
+            self.worldView = not self.worldView
         if keysym.sym == sdl.SDLK_f:
             self.showFrameStat()
-            # print fps stats
 
 #        # Control agent
 ##        if keysym.sym == sdl.SDLK_w:
@@ -293,7 +294,8 @@ class Visualization(object):
             # Only run the simulation if allowed
             if self.runSimulation:
                 self.sim.step()
-            self.render()
+#            self.render()
+            self.renderer.render(self.window)
             frameDuration = sdl.SDL_GetTicks() - frameStart
             self.frameCount += 1
             self.frameDurationSum += frameDuration

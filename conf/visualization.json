@@ -1,13 +1,26 @@
 {
-    "window": { "width" : 600, "height": 600, "title": "Interactive Visualization"},
-    "bgColor" : [0,0,0,0],
+    "window": { "width" : 600, "height": 600,
+                "title": "Interactive Visualization",
+                "bgColor" : [0,0,0,0]
+    },
     "fps": 60,
     "runSimulationAtStart" : 0,
-    "gl":{},
-    "agentFov": [16, 10],
     "worldView": 1,
-    "shader" : {"shader_dir":"viz/shader/",
-                "vertex":{"filename" : "vertex.shader"},
-                "fragment":{"filename" : "fragment.shader"}
+    "shaderDir" : "viz/shader/",
+    "shaders" : {"defaultVertex":{"type":"vertex",
+                                  "filename":"vertex.shader",
+                                  "uniforms":{"mat_ModelView":{"type":"mat4"},
+                                              "mat_Proj":{"type":"mat4"}
+                                  }
+                 },
+                 "defaultFragment":{"type":"fragment",
+                                    "filename":"fragment.shader",
+                                    "uniforms":{
+                                    }
+                 }
+    },
+    "programs" : {"default": {"shaderNames":["defaultVertex","defaultFragment"]
+                 }
     }
+
 }
