@@ -7,10 +7,10 @@ import matplotlib.pyplot as pyplot
 
 #WIDTH = 200
 #HEIGHT= 200
-WIDTH = 50
-HEIGHT= 50
+WIDTH = 100
+HEIGHT= 100
 
-COMPLEXITY = 0.01
+COMPLEXITY = 0.03
 DENSITY = 0.01
 
 # 0 - free
