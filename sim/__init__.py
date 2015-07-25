@@ -7,7 +7,7 @@ import staticobject
 import dynamicobject
 import agent
 #from contactlistener import WorldContactListener
-##-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self):
         # World map
