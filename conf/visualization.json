@@ -21,6 +21,10 @@
     },
     "programs" : {"default": {"shaderNames":["defaultVertex","defaultFragment"]
                  }
+    },
+    "visuals":{"static":{"wall":{"color":[0.5,0,0]}
+               },
+            "dynamics":{},
+            "agents":{}
     }
-
 }

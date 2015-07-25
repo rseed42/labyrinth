@@ -63,7 +63,8 @@ class Simulation(object):
                     w,h = i+tileSize, j+tileSize
                     body.CreatePolygonFixture(vertices=((i,j),(w,j), (w,h),(i,h)),
                                               density=0)
-                    body.userData = obj
+        body.userData = obj
+        obj.setBody(body)
 
     def setupUserAgent(self):
         """ Is to be called from the viz app only
@@ -89,7 +90,8 @@ class Simulation(object):
         self.world = b2.b2World((0,0))
         # Load static objects
         for name, objCfg in self.worldCfg.objects.static.items():
-            self.staticObjects[name] = staticobject.StaticObject(name, objCfg)
+            self.staticObjects[name] = staticobject.StaticObject()
+            self.staticObjects[name].configure(objCfg)
             self.loadStaticObject(geometry, self.staticObjects[name])
         # Load dynamics objects
 #        for name, objCfg in self.worldCfg.objects.dynamic.items():

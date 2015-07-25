@@ -114,7 +114,11 @@ class Visualization(object):
         self.renderer.loadShaders(self.cfg.shaderDir,
                                   self.cfg.shaders,
                                   self.cfg.programs)
-        self.renderer.initVisuals(self.sim)
+        self.renderer.initVisuals(self.cfg.visuals,
+                                  self.sim.staticObjects,
+                                  self.sim.dynamicObjects,
+                                  self.sim.agents
+        )
         return True
 
 #    def render(self):
