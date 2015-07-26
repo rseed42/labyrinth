@@ -4,8 +4,11 @@ class Mind(object):
     def __init__(self):
         self.visionField = None
         self.actions = {}
+        self.agent = None
 
     def configure(self, cfg, agent):
+        # Keep a reference to the agent to read states
+        self.agent = agent
         # Set up action map
         self.actions['acc'] = agent.accelerate
         self.actions['racc'] = agent.releaseAccelerator
@@ -17,7 +20,7 @@ class Mind(object):
         self.actions['right'] = agent.steerRight
         self.actions['rsteer'] = agent.releaseSteering
         # Connect vision field
-        self.visionFIeld = agent.sensorField
+        self.visionField = agent.sensorField
 
 #    def visionFieldToPercepts()
     def think(self):
