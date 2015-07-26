@@ -32,11 +32,3 @@ class Shader(object):
         result = gl.glGetShaderiv(self.shaderId, gl.GL_COMPILE_STATUS)
         if result != 1:
             sys.stderr.write(gl.glGetShaderInfoLog(self.shaderId)+'\n')
-
-#    def mapUniformLocations(self, programId):
-#        """ This function must be called only after the shaders has been attached
-#            to the program
-#        """
-#        for name, u in self.uniforms.items():
-#            # Be careful! JSON Strings are unicode
-#            u.loc = gl.glGetUniformLocation(programId, str(name)),

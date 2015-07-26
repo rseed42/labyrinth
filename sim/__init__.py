@@ -77,7 +77,6 @@ class Simulation(object):
             self.agents[name] = agent.Agent(name)
             self.agents[name].construct(self.world, agentCfg)
 
-#        self.userControl(self.agents
 #        # Set up oevent handling
 #        self.contactListener = WorldContactListener(self.user)
 #        self.world.contactListener = self.contactListener

@@ -1,13 +1,9 @@
 #!/usr/bin/python
 import argparse
-#import sys
-#import simulation
 import sim
 import viz
-#from conf import msg
 #-------------------------------------------------------------------------------
 DEFAULT_VIZ_CFG_FILE = "conf/visualization.json"
-#DEFAULT_SIM_CFG_FILE = "conf/simulation.json"
 #-------------------------------------------------------------------------------
 if __name__ ==  '__main__':
     parser = argparse.ArgumentParser('ineract')
@@ -16,18 +12,11 @@ if __name__ ==  '__main__':
     parser.add_argument('-c', dest='vizCfgFilename',
                         default=DEFAULT_VIZ_CFG_FILE,
                         help='Configuration file for the visualization')
-#    parser.add_argument('--cfg-sim', dest='cfg_sim',
-#                        default=DEFAULT_SIM_CFG_FILE,
-#                        help='Configuration file for the simulation')
     parser.add_argument(dest='worldCfgFilename')
     args = parser.parse_args()
     # Create and prepare the simulation
-#    sim = simulation.Simulation()
     simulation = sim.Simulation()
     simulation.load(args.worldCfgFilename)
-#    if not simulation.load():
-#        sys.stderr.write(msg.sim_load_fail + msg.newline)
-#        sys.exit(1)
     # Start the visualisation
     viz = viz.Visualization(simulation)
     viz.configure(args.vizCfgFilename)

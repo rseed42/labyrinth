@@ -1,3 +1,6 @@
+# Contains an algorithm that can find all tiles that belong to a contiguous
+# object in the maze
+
 import numpy as np
 
 class MapLoader(object):
