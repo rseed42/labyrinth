@@ -5,7 +5,7 @@ import numpy as np
 # used for tests or bots that are part of the environment. More advanced minds
 # will be dynamic systems (like neural networks) and not Turing machines.
 #-------------------------------------------------------------------------------
-PROB_CHANGE_DIRECTION = 0.005
+PROB_CHANGE_DIRECTION = 0.01
 MAX_STEER_CNT = 1
 #-------------------------------------------------------------------------------
 class MindProgram(mind.Mind):
