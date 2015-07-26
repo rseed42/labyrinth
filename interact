@@ -16,7 +16,9 @@ if __name__ ==  '__main__':
     args = parser.parse_args()
     # Create and prepare the simulation
     simulation = sim.Simulation()
-    simulation.load(args.worldCfgFilename)
+#    simulation.load(args.worldCfgFilename)
+    simulation.configure(args.worldCfgFilename)
+    simulation.load()
     # Start the visualisation
     viz = viz.Visualization(simulation)
     viz.configure(args.vizCfgFilename)

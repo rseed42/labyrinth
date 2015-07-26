@@ -11,5 +11,7 @@ if __name__ ==  '__main__':
     parser.add_argument(dest='worldCfgFilename')
     args = parser.parse_args()
     simulation = sim.Simulation()
-    simulation.load(args.worldCfgFilename)
+#    simulation.load(args.worldCfgFilename)
+    simulation.configure(args.worldCfgFilename)
+    simulation.load()
     simulation.start()

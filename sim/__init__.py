@@ -11,6 +11,7 @@ class Simulation(object):
     def __init__(self):
         # World map
         self.worldCfg = None
+        self.world = None
         self.staticObjects = {}
         self.dynamicObjects = {}
         self.agents = {}
@@ -25,6 +26,17 @@ class Simulation(object):
         self.height = 0
         # Collision handling
         self.contactListener = None
+
+    def configure(self, worldCfgFilename):
+        # Load world configuration
+        fp = file(worldCfgFilename, 'r')
+        self.worldCfg = bunch.bunchify(json.load(fp))
+        fp.close()
+        # Configure the simulation parameters
+        self.timestep = self.worldCfg.solver.timestep
+        self.velocityIterations = self.worldCfg.solver.velocityIterations
+        self.positionIterations = self.worldCfg.solver.positionIterations
+
 
     def loadDynamicObject(self, geometry, obj):
         pass
@@ -48,15 +60,16 @@ class Simulation(object):
         body.userData = obj
         obj.setBody(body)
 
-    def load(self, worldCfgFilename):
+#    def load(self, worldCfgFilename):
+    def load(self):
         # Load world map
-        fp = file(worldCfgFilename, 'r')
-        self.worldCfg = bunch.bunchify(json.load(fp))
-        fp.close()
-        # Configure the simulation parameters
-        self.timestep = self.worldCfg.solver.timestep
-        self.velocityIterations = self.worldCfg.solver.velocityIterations
-        self.positionIterations = self.worldCfg.solver.positionIterations
+#        fp = file(worldCfgFilename, 'r')
+#        self.worldCfg = bunch.bunchify(json.load(fp))
+#        fp.close()
+#        # Configure the simulation parameters
+#        self.timestep = self.worldCfg.solver.timestep
+#        self.velocityIterations = self.worldCfg.solver.velocityIterations
+#        self.positionIterations = self.worldCfg.solver.positionIterations
         # Load world geometry
         fp = file(self.worldCfg.geometryFilename, 'rb')
         geometry = np.load(fp).transpose()
@@ -84,12 +97,14 @@ class Simulation(object):
         return True
 
     def reset(self):
+        # Stop simulation temporarily
         self.running = False
-#        self.wmap = None
-#        self.user = None
-#        if not self.load():
-#            sys.stderr.write(msg.sim_load_fail+msg.newline)
-
+        self.world = None
+        self.staticObjects = {}
+        self.dynamicObjects = {}
+        self.contactListener = False
+        # Load the world
+        self.load()
 
     def start(self):
         """ Used in non-interactive simulations"""

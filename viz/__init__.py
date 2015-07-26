@@ -42,11 +42,8 @@ class Visualization(object):
         fp = file(vizCfgFilename, 'r')
         self.cfg = bunch.bunchify(json.load(fp))
         fp.close()
-
         self.runSimulation = self.cfg.runSimulationAtStart
         self.targetFrameDuration = 1000./self.cfg.fps
-        self.frameStats = stats.FrameStats(self.cfg.fps)
-
         self.worldView = self.cfg.worldView
         self.width = self.cfg.window.width
         self.height = self.cfg.window.height
@@ -59,19 +56,9 @@ class Visualization(object):
         gl.glViewport(0,0,self.width, self.height)
 
     def initialize(self):
-        if sdl.SDL_Init(sdl.SDL_INIT_EVERYTHING) < 0:
-            return False
-
-        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DOUBLEBUFFER, 1)
-        self.window = sdl.SDL_CreateWindow(self.cfg.window.title,
-                                           sdl.SDL_WINDOWPOS_CENTERED,
-                                           sdl.SDL_WINDOWPOS_CENTERED,
-                                           self.cfg.window.width,
-                                           self.cfg.window.height,
-                                           WND_FLAGS
-        )
-        if not self.window: return False
         self.glcontext = sdl.SDL_GL_CreateContext(self.window)
+        # Frame stats
+        self.frameStats = stats.FrameStats(self.cfg.fps)
         # Open GL
         self.init_gl()
         # Renderer
@@ -95,7 +82,6 @@ class Visualization(object):
         elif self.worldView == 0:
             width, height = self.userController.agent.fov
             self.renderer.setProjection(width, height)
-
         return True
 
     def cleanup(self):
@@ -116,18 +102,14 @@ class Visualization(object):
 
     def on_key_down(self, keysym):
         # Control simulation
-        pass
         if keysym.sym == sdl.SDLK_q:
             self.exit_()
-#        if keysym.sym == sdl.SDLK_r:
-#            self.runSimulation = False
-#            self.sim.reset()
-#            self.runSimulation = True
+        if keysym.sym == sdl.SDLK_r:
+            self.reset()
         if keysym.sym == sdl.SDLK_p:
             self.runSimulation = not self.runSimulation
             print '-'*40
             print "Run Simulation: ", self.runSimulation
-
         if keysym.sym == sdl.SDLK_h:
             self.showHelp()
         if keysym.sym == sdl.SDLK_g:
@@ -141,10 +123,10 @@ class Visualization(object):
                 width, height = self.userController.agent.fov
                 self.renderer.setProjection(width, height)
             self.renderer.worldView = self.worldView
-
         if keysym.sym == sdl.SDLK_f:
             self.frameStats.show()
         if keysym.sym == sdl.SDLK_i:
+            # use for tests
             pass
         # Control agent
         self.userController.keyDown(keysym.sym)
@@ -169,10 +151,23 @@ class Visualization(object):
         print 'd: Turn right'
         print 'f: Frame statistics'
 
-
     def start(self):
         """ Main application loop
         """
+        if sdl.SDL_Init(sdl.SDL_INIT_EVERYTHING) < 0:
+            return False
+
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DOUBLEBUFFER, 1)
+        self.window = sdl.SDL_CreateWindow(self.cfg.window.title,
+                                           sdl.SDL_WINDOWPOS_CENTERED,
+                                           sdl.SDL_WINDOWPOS_CENTERED,
+                                           self.cfg.window.width,
+                                           self.cfg.window.height,
+                                           WND_FLAGS
+        )
+        if not self.window: return False
+
+
         if not self.initialize():
             # Log error instead
 #            sys.stderr.write(msg.viz_gl_init_fail+msg.newline)
@@ -205,3 +200,20 @@ class Visualization(object):
                 sdl.SDL_Delay(delay)
         self.cleanup()
         sys.exit(0)
+
+    def reset(self):
+        # Stop simulation temporarily
+        self.running = False
+        self.runSimulation = False
+        # Reset the simulation
+        self.sim.reset()
+        # Remove all objects that need to be recreated
+        self.frameStats = None
+        self.renderer = None
+        self.userController = None
+        # No need to reconfigure, what changes state should
+        # be returned (see below) to its configuration
+        self.initialize()
+
+        self.runSimulation = self.cfg.runSimulationAtStart
+        self.running = True
