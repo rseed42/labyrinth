@@ -1,6 +1,7 @@
 import Box2D as b2
 import numpy as np
 from staticobject import StaticObject
+from mind import programed
 #-------------------------------------------------------------------------------
 # Agent
 #-------------------------------------------------------------------------------
@@ -28,6 +29,8 @@ class Agent(object):
         self.fov = None
         self.sensorField = {}
         self.frameNum = 0
+        # Mind
+        self.mind = None
 
     def addWheel(self, world, carBody, carPos, cfg):
         wheelDef = b2.b2BodyDef()
@@ -117,6 +120,11 @@ class Agent(object):
         # Create Sensor
         self.addSensor(world, cfg.sensor)
 
+        # Create the mind or remain mindless
+        if not cfg.mind: return
+        self.mind = programed.MindProgram()
+        self.mind.configure(cfg.mind, self)
+
     def accelerate(self):
         if self.engineSpeed < self.max_engine_speed:
             self.engineSpeed += self.acceleration_step
@@ -159,7 +167,7 @@ class Agent(object):
 
     def update(self):
         # Decision-making time
-#        self.sensorField
+        if self.mind: self.mind.think()
 
         # Put our actions into physics
         self.killOrthogonalVelocity(self.frontLeftWheel)
