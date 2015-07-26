@@ -26,6 +26,8 @@ class Agent(object):
         # Sensors
         self.sensor = None
         self.fov = None
+        self.sensorField = {}
+        self.frameNum = 0
 
     def addWheel(self, world, carBody, carPos, cfg):
         wheelDef = b2.b2BodyDef()
@@ -156,6 +158,10 @@ class Agent(object):
         body.linearVelocity = sidewaysAxis
 
     def update(self):
+        # Decision-making time
+#        self.sensorField
+
+        # Put our actions into physics
         self.killOrthogonalVelocity(self.frontLeftWheel)
         self.killOrthogonalVelocity(self.frontRightWheel)
         self.killOrthogonalVelocity(self.rearLeftWheel)
@@ -174,12 +180,44 @@ class Agent(object):
         mspeed = self.steeringAngle - rj.angle
         rj.motorSpeed = mspeed * self.steering_speed
 
-    def handleCollision(self, contact, fixtureMe, fixtureOther):
+    def handleCollisionBegin(self, contact, fixtureMe, fixtureOther):
         """ Collision events that do not come from the sensor,
             meaning that the agent has collided with something.
             Can be used to simulate damage, pain, etc.
         """
         # Will check if this is a sensor first
+        if fixtureMe.sensor:
+#            print '%d, b: %d' % (self.frameNum, id(fixtureOther))
+            self.sensorField[fixtureOther] = {}
+            return
+
+        if fixtureOther.sensor: return
+        obj = fixtureOther.body.userData
+        # The other object is an agent
+        if isinstance(obj, Agent):
+            pass
+#            print '%s - %s' % (self.name, obj.name)
+        elif isinstance(obj, StaticObject):
+            pass
+#            print '%s - sObj(%d)' % (self.name, obj.id)
+        # Either an error or an unknown body type without user data
+        else:
+            pass
+
+
+    def handleCollisionEnd(self, contact, fixtureMe, fixtureOther):
+        """ Collision events that do not come from the sensor,
+            meaning that the agent has collided with something.
+            Can be used to simulate damage, pain, etc.
+            It is the *touch* sensor.
+        """
+        # Will check if this is a sensor first
+        if fixtureMe.sensor:
+#            print '%d, e: %d' % (self.frameNum, id(fixtureOther))
+            self.sensorField.pop(fixtureOther)
+            return
+
+        if fixtureOther.sensor: return
         obj = fixtureOther.body.userData
         # The other object is an agent
         if isinstance(obj, Agent):

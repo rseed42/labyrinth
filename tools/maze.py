@@ -7,11 +7,11 @@ import matplotlib.pyplot as pyplot
 
 #WIDTH = 200
 #HEIGHT= 200
-WIDTH = 100
-HEIGHT= 100
+WIDTH = 150
+HEIGHT= 150
 
-COMPLEXITY = 0.03
-DENSITY = 0.01
+COMPLEXITY = 0.005
+DENSITY = 0.005
 
 # 0 - free
 # 1 - wall

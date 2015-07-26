@@ -19,10 +19,16 @@ class WorldContactListener(b2.b2ContactListener):
             if not isinstance(agent, Agent): continue
             otherFix = contact.fixtureB
             if otherFix == fix: otherFix = contact.fixtureA
-            agent.handleCollision(contact, fix, otherFix)
+            agent.handleCollisionBegin(contact, fix, otherFix)
 
     def EndContact(self, contact):
-        pass
+        # Extra careful here. UserData contains a pointer to an agent object.
+        for fix in (contact.fixtureA, contact.fixtureB):
+            agent = fix.body.userData
+            if not isinstance(agent, Agent): continue
+            otherFix = contact.fixtureB
+            if otherFix == fix: otherFix = contact.fixtureA
+            agent.handleCollisionEnd(contact, fix, otherFix)
 
     def PreSolve(self, contact, oldManifold):
         pass

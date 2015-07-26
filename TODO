@@ -6,3 +6,4 @@
     - think about general improvements
 3. Start implementing an AI
 4. Implement other static objects
+5. Use a simple scenegraph, since this is already needed
