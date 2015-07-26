@@ -1,36 +1,31 @@
 """
- Main Listener.
+ Global contact listener for the world
 """
 import sys
-from conf import msg
-try:
-    import Box2D as b2
-except ImportError:
-    sys.stderr.write(msg.import_box2d_fail+msg.newline)
-    sys.exit(1)
+import Box2D as b2
+from staticobject import StaticObject
+from agent import Agent
 #-------------------------------------------------------------------------------
 # Contact Listener for the agent
 #-------------------------------------------------------------------------------
 class WorldContactListener(b2.b2ContactListener):
-    def __init__(self, agent):
-        b2.b2ContactListener.__init__(self)
-        self.agent = agent
+    def __init__(self):
+        super(WorldContactListener, self).__init__()
+
     def BeginContact(self, contact):
-        pass
-#        print hex(id(contact.fixtureA)), hex(id(contact.fixtureB))
-#        if not contact.touching: return
-#        sensor = contact.fixtureA
-#        fix = contact.fixtureB
-#        if contact.fixtureA == self.agent.sensor:
-#            print '-S-'
-#        if contact.fixtureB == self.agent.sensor:
-#            print '-S-'
-        # Needs to be touching
-#        print fix.body.worldCenter
+        # Extra careful here. UserData contains a pointer to an agent object.
+        for fix in (contact.fixtureA, contact.fixtureB):
+            agent = fix.body.userData
+            if not isinstance(agent, Agent): continue
+            otherFix = contact.fixtureB
+            if otherFix == fix: otherFix = contact.fixtureA
+            agent.handleCollision(contact, fix, otherFix)
 
     def EndContact(self, contact):
         pass
+
     def PreSolve(self, contact, oldManifold):
         pass
+
     def PostSolve(self, contact, impulse):
         pass

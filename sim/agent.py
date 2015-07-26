@@ -1,5 +1,6 @@
 import Box2D as b2
 import numpy as np
+from staticobject import StaticObject
 #-------------------------------------------------------------------------------
 # Agent
 #-------------------------------------------------------------------------------
@@ -30,6 +31,8 @@ class Agent(object):
         wheelDef.type = b2.b2_dynamicBody
         wheelDef.position = b2.b2Vec2(carPos) + b2.b2Vec2(cfg.position)
         wheel = world.CreateBody(wheelDef)
+        # For collision detection, the wheel is part of the car:
+        wheel.userData = self
         fx = wheel.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
                                        friction=cfg.friction,
                                        density=cfg.density,
@@ -174,3 +177,18 @@ class Agent(object):
         rj = self.frontRightWheel.joints[0].joint
         mspeed = self.steeringAngle - rj.angle
         rj.motorSpeed = mspeed * self.steering_speed
+
+    def handleCollision(self, contact, fixtureMe, fixtureOther):
+        """ Collision events that do not come from the sensor,
+            meaning that the agent has collided with something.
+            Can be used to simulate damage, pain, etc.
+        """
+        obj = fixtureOther.body.userData
+        # The other object is an agent
+        if isinstance(obj, Agent):
+            print '%s - %s' % (self.name, obj.name)
+        elif isinstance(obj, StaticObject):
+            print '%s - sObj(%d)' % (self.name, obj.id)
+        # Either an error or an unknown body type without user data
+        else:
+            pass

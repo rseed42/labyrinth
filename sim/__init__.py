@@ -2,11 +2,10 @@ import json
 import Box2D as b2
 import numpy as np
 import bunch
-import worldmap
 import staticobject
 import dynamicobject
 import agent
-#from contactlistener import WorldContactListener
+from contactlistener import WorldContactListener
 #-------------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self):
@@ -24,6 +23,8 @@ class Simulation(object):
         # World parameters
         self.width = 0
         self.height = 0
+        # Collision handling
+        self.contactListener = None
 
     def loadDynamicObject(self, geometry, obj):
         pass
@@ -77,10 +78,10 @@ class Simulation(object):
             self.agents[name] = agent.Agent(name)
             self.agents[name].construct(self.world, agentCfg)
 
-#        # Set up oevent handling
-#        self.contactListener = WorldContactListener(self.user)
-#        self.world.contactListener = self.contactListener
-#        return True
+        # Set up collision handling
+        self.contactListener = WorldContactListener()
+        self.world.contactListener = self.contactListener
+        return True
 
     def reset(self):
         self.running = False
