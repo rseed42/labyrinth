@@ -3,9 +3,6 @@ import sys
 import sdl2 as sdl
 import sdl2.ext as sdlx
 import OpenGL.GL as gl
-import OpenGL.GLU as glu
-import OpenGL.arrays.vbo as glvbo
-from OpenGL.GL import shaders
 import numpy as np
 import bunch
 import stats
@@ -18,6 +15,7 @@ WND_FLAGS = sdl.SDL_WINDOW_OPENGL | sdl.SDL_WINDOW_SHOWN
 #-------------------------------------------------------------------------------
 class Visualization(object):
     def __init__(self, simulation):
+        self.glcontext = None
         # Simulation
         self.sim = simulation
         self.runSimulation = False
@@ -54,9 +52,19 @@ class Visualization(object):
         gl.glClearDepth(1.0)
         gl.glEnable(gl.GL_TEXTURE_2D)
         gl.glViewport(0,0,self.width, self.height)
+        print '-'*40
+        print 'GL INFO'
+        print '-'*40
+        print gl.glGetString(gl.GL_VERSION)
+        print gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION)
+        print '-'*40
 
     def initialize(self):
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_ACCELERATED_VISUAL,True)
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
+        sdl.SDL_GL_SetAttribute(sdl.SDL_GL_CONTEXT_MINOR_VERSION, 0)
         self.glcontext = sdl.SDL_GL_CreateContext(self.window)
+
         # Frame stats
         self.frameStats = stats.FrameStats(self.cfg.fps)
         # Open GL
