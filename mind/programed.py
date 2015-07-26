@@ -13,16 +13,39 @@ class MindProgram(mind.Mind):
         super(MindProgram, self).__init__()
         self.steerCount = 0
         self.steer = None
+        # Store last 120 positions
+        self.time = 0
+        self.memory = np.zeros((120,2),'f')
+        self.avgDistance = 1
+
+    def configure(self, cfg, agent):
+        super(MindProgram, self).configure(cfg, agent)
+        # Simulate that we have been here for the last 2 seconds
+        self.memory[:,0] = agent.body.transform.position.x
+        self.memory[:,1] = agent.body.transform.position.y
 
     def think(self):
+        # Calculate the average distance, relative to the current pos:
+        pos = np.array(self.agent.body.transform.position, 'f')
+        if self.time > self.memory.shape[0]:
+            relpos = pos - self.memory
+            self.avgDistance = np.sqrt((relpos**2).sum(axis=1)).sum()/pos.shape[0]
+        # This means that the agent can not move
+        if self.avgDistance < 1:
+            # Try to get out by reversing
+            print 'try rev'
+            self.actions['left']()
+            self.actions['rev']()
+            return
+
         # Move ahead
         if len(self.visionField) == 0:
             if self.steerCount == 0:
                 if self.agent.steeringAngle > 0:
-                    print 'RLS STEER'
+#                    print 'RLS STEER'
                     self.actions['rsteer']()
             else:
-                print self.steerCount
+#                print self.steerCount
                 self.steer()
                 self.steerCount -= 1
                 return
@@ -33,7 +56,7 @@ class MindProgram(mind.Mind):
 
             # Randomly decide to change direction
             if np.random.binomial(1, PROB_CHANGE_DIRECTION):
-                print 'CHNG DIR'
+#                print 'CHNG DIR'
                 if np.random.randint(2):
 #                    print 'RIGHT'
                     self.steer = self.actions['right']
@@ -41,3 +64,7 @@ class MindProgram(mind.Mind):
 #                    print 'LEFT'
                     self.steer = self.actions['left']
                 self.steerCount = MAX_STEER_CNT
+        # Store to memory
+        self.memory = np.roll(self.memory, -1, axis=0)
+        self.memory[-1,:] =  self.agent.body.transform.position
+        self.time += 1

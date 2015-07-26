@@ -134,6 +134,7 @@ class Agent(object):
 
     def reverse(self):
         if self.engineSpeed < self.reverse_engine_max_speed:
+            print 'reverse'
             self.engineSpeed -= self.reverse_engine_acc_step
 
     def releaseReverse(self):
