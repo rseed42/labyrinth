@@ -13,7 +13,7 @@ __pycache__/
 test/
 tmp/
 data/
-
+conf/
 
 # Distribution / packaging
 .Python
