@@ -26,4 +26,4 @@ class Mind(object):
     def think(self):
         """ Override by subclasses
         """
-        pass
+        raise Exception('Please, override this function')

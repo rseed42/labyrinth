@@ -7,3 +7,5 @@
 3. Start implementing an AI
 4. Implement other static objects
 5. Use a simple scenegraph, since this is already needed
+6. Agent action log, so we can trace the decisions it made and its
+   position/rotation
