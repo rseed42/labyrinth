@@ -5,13 +5,13 @@ from numpy.random import random_integers as rand
 import matplotlib.pyplot as pyplot
 
 
-#WIDTH = 200
-#HEIGHT= 200
-WIDTH = 150
-HEIGHT= 150
+WIDTH = 250
+HEIGHT= 250
+#WIDTH = 150
+#HEIGHT= 150
 
-COMPLEXITY = 0.005
-DENSITY = 0.005
+COMPLEXITY = 0.012
+DENSITY = 0.004
 
 # 0 - free
 # 1 - wall

@@ -33,7 +33,7 @@ class MindProgram(mind.Mind):
         # This means that the agent can not move
         if self.avgDistance < 1:
             # Try to get out by reversing
-            print 'try rev'
+#            print 'try rev'
             self.actions['left']()
             self.actions['rev']()
             return
