@@ -76,7 +76,6 @@ class Visualization(object):
         self.init_gl()
         # Renderer
         self.renderer = renderer.Renderer()
-        self.renderer.setProjection(self.sim.width, self.sim.height)
         self.renderer.loadShaders(self.cfg.shaderDir,
                                   self.cfg.shaders,
                                   self.cfg.programs)
@@ -88,6 +87,15 @@ class Visualization(object):
         # Set up user controller
         agent = self.sim.agents[self.sim.worldCfg.user]
         self.userController = controller.UserController(agent)
+        # Set up the projection at the end, since we need the user
+        # controller
+        self.renderer.worldView = self.worldView
+        if self.worldView == 1:
+            self.renderer.setProjection(self.sim.width, self.sim.height)
+        elif self.worldView == 0:
+            width, height = self.userController.agent.fov
+            self.renderer.setProjection(width, height)
+
         return True
 
     def cleanup(self):
@@ -123,7 +131,15 @@ class Visualization(object):
         if keysym.sym == sdl.SDLK_h:
             self.showHelp()
         if keysym.sym == sdl.SDLK_g:
-            self.worldView = not self.worldView
+            if self.worldView == 0:
+                self.worldView = 1
+                self.renderer.setProjection(self.sim.width, self.sim.height)
+            elif self.worldView == 1:
+                self.worldView = 0
+                width, height = self.userController.agent.fov
+                self.renderer.setProjection(width, height)
+            self.renderer.worldView = self.worldView
+
         if keysym.sym == sdl.SDLK_f:
             self.frameStats.show()
         if keysym.sym == sdl.SDLK_i:
@@ -170,7 +186,7 @@ class Visualization(object):
             if self.runSimulation: self.sim.step()
             simEnd = sdl.SDL_GetTicks()
             self.frameStats.simulationSum += simEnd - eventsEnd
-            self.renderer.render(self.window)
+            self.renderer.render(self.window, self.userController)
             renderEnd = sdl.SDL_GetTicks()
             self.frameStats.renderSum += renderEnd - simEnd
             # Agents calculations

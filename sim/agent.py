@@ -25,6 +25,7 @@ class Agent(object):
         self.rearRightWheel = None
         # Sensors
         self.sensor = None
+        self.fov = None
 
     def addWheel(self, world, carBody, carPos, cfg):
         wheelDef = b2.b2BodyDef()
@@ -65,6 +66,7 @@ class Agent(object):
         sensorFov = b2.b2PolygonShape()
         # Define sensor shape
         w, h = cfg.fov.width, cfg.fov.height
+        self.fov = (w,h)
         fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
                         (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
         # Move sensor relative to the body

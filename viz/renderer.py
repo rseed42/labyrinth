@@ -16,7 +16,10 @@ class Renderer(object):
         self.visStatic = {}
         self.visDynamic = {}
         self.visAgents = {}
+        self.worldView = True
         self.matModelView = np.identity(4,'f')
+        self.projRot = np.identity(4,'f')
+        self.projTrans = np.identity(4,'f')
         self.matProj = None
 
     def loadShaders(self, shaderDir, cfgShaders, cfgPrograms):
@@ -81,7 +84,7 @@ class Renderer(object):
     def createAvatar(self):
         pass
 
-    def render(self, window):
+    def render(self, window, userController):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         # Render scene
         # Currently using the same shaders for all objects
@@ -89,6 +92,17 @@ class Renderer(object):
         prog.use()
         # Set Projection Matrix
         prog.setUniform('mat_ModelView', self.matModelView)
+        if self.worldView == 0 and userController != None:
+            pos = userController.agent.body.transform.position
+            self.projTrans[0,3] = pos[0]
+            self.projTrans[0,1] = pos[1]
+            R = userController.agent.body.transform.R
+            self.projRot[0,0] = R.col1.x
+            self.projRot[1,0] = R.col1.y
+            self.projRot[0,1] = R.col2.x
+            self.projRot[1,1] = R.col2.y
+#            self.matProj = np.dot(self.projTrans, self.projRot)
+
         prog.setUniform('mat_Proj', self.matProj)
         # Render static objects in one go
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
