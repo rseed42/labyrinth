@@ -134,6 +134,8 @@ class Visualization(object):
             if self.worldView == 0:
                 self.worldView = 1
                 self.renderer.setProjection(self.sim.width, self.sim.height)
+                self.renderer.matModelView = np.identity(4,'f')
+                self.renderer.matView = np.identity(4,'f')
             elif self.worldView == 1:
                 self.worldView = 0
                 width, height = self.userController.agent.fov

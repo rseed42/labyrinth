@@ -18,6 +18,7 @@ class Renderer(object):
         self.visAgents = {}
         self.worldView = True
         self.matModelView = np.identity(4,'f')
+        self.matView = np.identity(4,'f')
         self.projRot = np.identity(4,'f')
         self.projTrans = np.identity(4,'f')
         self.matProj = None
@@ -91,7 +92,6 @@ class Renderer(object):
         prog = self.programs['default']
         prog.use()
         # Set Projection Matrix
-        prog.setUniform('mat_ModelView', self.matModelView)
         if self.worldView == 0 and userController != None:
             pos = userController.agent.body.transform.position
             self.projTrans[0,3] = pos[0]
@@ -101,8 +101,11 @@ class Renderer(object):
             self.projRot[1,0] = R.col1.y
             self.projRot[0,1] = R.col2.x
             self.projRot[1,1] = R.col2.y
+            self.matView = self.projTrans
+#            self.matView = np.dot(self.projTrans, self.projRot)
 #            self.matProj = np.dot(self.projTrans, self.projRot)
-
+        prog.setUniform('mat_ModelView', self.matModelView)
+        prog.setUniform('mat_View', self.matView)
         prog.setUniform('mat_Proj', self.matProj)
         # Render static objects in one go
         gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
