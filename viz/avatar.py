@@ -11,6 +11,7 @@ class Avatar(object):
         self.visFRWheel = None
         self.visRLWheel = None
         self.visRRWheel = None
+        self.visSensor = None
 
     def configure(self, cfg):
         pass
@@ -44,6 +45,12 @@ class Avatar(object):
         self.visRRWheel.color = [.5,0,0,1]
         self.visRRWheel.verticesFromFixtures(self.agent.rearRightWheel.fixtures)
 
+        self.visSensor = visual.SensorObj()
+        self.visSensor.setBody(self.agent.body)
+        self.visSensor.color = [1,1,1,1]
+#        self.visSensor.verticesFromFixtures([self.agent.sensor])
+        self.visSensor.setVertices(self.agent.sensor)
+
     def draw(self, prog):
         """ Overrides the default function
         """
@@ -52,3 +59,4 @@ class Avatar(object):
         self.visFRWheel.draw(prog)
         self.visRLWheel.draw(prog)
         self.visRRWheel.draw(prog)
+        self.visSensor.draw(prog)

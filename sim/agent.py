@@ -61,8 +61,19 @@ class Agent(object):
         joint = world.CreateJoint(jointDef)
         return wheel
 
-    def addSensor(self, world, carBody, carPos, cfg):
-        pass
+    def addSensor(self, world, cfg):
+        sensorFov = b2.b2PolygonShape()
+        # Define sensor shape
+        w, h = cfg.fov.width, cfg.fov.height
+        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
+                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
+        # Move sensor relative to the body
+        relpos = np.array([cfg.relpos.x, cfg.relpos.y])
+        sensorFov.vertices = (fov+relpos).tolist()
+        sensorFixtureDef = b2.b2FixtureDef()
+        sensorFixtureDef.isSensor = True
+        sensorFixtureDef.shape = sensorFov
+        self.sensor = self.body.CreateFixture(sensorFixtureDef)
 
     def construct(self, world, cfg):
         # Initialize the control variables
@@ -86,25 +97,6 @@ class Agent(object):
                                        density=cfg.density,
                                        restitution=cfg.restitution
         )
-        # Create Sensor
-        self.addSensor(None, None, None, None)
-#        sensorFov = b2.b2PolygonShape()
-#        # Define sensor shape
-#        w, h = cfg.sensor.fov.width, cfg.sensor.fov.height
-#        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
-#                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
-#        # Move sensor relative to the body
-#        relpos = np.array([cfg.sensor.relpos.x, cfg.sensor.relpos.y])
-#        sensorFov.vertices = (fov+relpos).tolist()
-#        sensorFixtureDef = b2.b2FixtureDef()
-#        sensorFixtureDef.isSensor = True
-#        sensorFixtureDef.shape = sensorFov
-#        self.sensor = self.body.CreateFixture(sensorFixtureDef)
-#        self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
-#                                       friction=cfg.friction,
-#                                       density=cfg.density,
-#                                       restitution=cfg.restitution
-#        )
         self.frontLeftWheel = self.addFrontWheel(world, self.body,
                                                  cfg.position,
                                                  cfg.wheels.frontLeft)
@@ -118,6 +110,8 @@ class Agent(object):
         self.rearRightWheel = self.addRearWheel(world, self.body,
                                                   cfg.position,
                                                   cfg.wheels.rearRight)
+        # Create Sensor
+        self.addSensor(world, cfg.sensor)
 
     def accelerate(self):
         if self.engineSpeed < self.max_engine_speed:
@@ -183,12 +177,15 @@ class Agent(object):
             meaning that the agent has collided with something.
             Can be used to simulate damage, pain, etc.
         """
+        # Will check if this is a sensor first
         obj = fixtureOther.body.userData
         # The other object is an agent
         if isinstance(obj, Agent):
-            print '%s - %s' % (self.name, obj.name)
+            pass
+#            print '%s - %s' % (self.name, obj.name)
         elif isinstance(obj, StaticObject):
-            print '%s - sObj(%d)' % (self.name, obj.id)
+            pass
+#            print '%s - sObj(%d)' % (self.name, obj.id)
         # Either an error or an unknown body type without user data
         else:
             pass

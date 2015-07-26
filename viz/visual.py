@@ -5,10 +5,11 @@ import numpy as np
 # Visual representation of the objects in the simulation
 #-------------------------------------------------------------------------------
 class VisObj(object):
-    def __init__(self):
+    def __init__(self, primitive=gl.GL_TRIANGLES):
         self.vbo = None
         self.color = None
         self.vertices = None
+        self.drawPrimitive = primitive
 
     def configure(self, cfg):
         self.color = cfg.color
@@ -45,7 +46,8 @@ class VisObj(object):
         prog.setUniform('vec_Color', self.color)
         self.vbo.bind()
         gl.glVertexPointerf(self.vbo)
-        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.vertices.size)
+#        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.vertices.size)
+        gl.glDrawArrays(self.drawPrimitive, 0, self.vertices.size)
         self.vbo.unbind()
 
 #-------------------------------------------------------------------------------
@@ -54,8 +56,8 @@ class StaticObj(VisObj):
         super(StaticObj, self).__init__()
 #-------------------------------------------------------------------------------
 class DynObj(VisObj):
-    def __init__(self):
-        super(DynObj, self).__init__()
+    def __init__(self, primitive=gl.GL_TRIANGLES):
+        super(DynObj, self).__init__(primitive=primitive)
         self.translation = np.identity(4,'f')
         self.rotation = np.identity(4,'f')
         self.body = None
@@ -91,3 +93,13 @@ class DynObj(VisObj):
         prog.setUniform('mat_ModelView',
                         np.dot(self.translation,self.rotation))
         super(DynObj, self).draw(prog)
+#-------------------------------------------------------------------------------
+class SensorObj(DynObj):
+    def __init__(self):
+        super(SensorObj, self).__init__(primitive=gl.GL_LINE_LOOP)
+
+    def setVertices(self, fixture):
+        self.vertices = np.zeros((4,3),'f')
+        for i in xrange(len(fixture.shape.vertices)):
+            self.vertices[i,:2] = fixture.shape.vertices[i]
+        super(SensorObj, self).setVertices(self.vertices)
