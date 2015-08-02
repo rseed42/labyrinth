@@ -32,12 +32,6 @@ class VisObj(object):
             self.vertices[i*6+3,:2] = vertices[0]
             self.vertices[i*6+4,:2] = vertices[2]
             self.vertices[i*6+5,:2] = vertices[3]
-#            for j in xrange(4):
-#                self.vertices[i*6+j, :2] = vertices[j]
-#                self.vertices[i*6+j+3, :2] = vertices[j+1]
-#                self.vertices[i*2+1, j] = fixtures[i].shape.vertices[j+1]
-#            self.vertices[i*2, 0] = self.vertices[i*2,0]
-#        self.vbo = vbo.VBO(self.vertices, usage=gl.GL_STATIC_DRAW)
         self.vbo = vbo.VBO(self.vertices)
 
     def draw(self, prog):
@@ -46,7 +40,6 @@ class VisObj(object):
         prog.setUniform('vec_Color', self.color)
         self.vbo.bind()
         gl.glVertexPointerf(self.vbo)
-#        gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.vertices.size)
         gl.glDrawArrays(self.drawPrimitive, 0, self.vertices.size)
         self.vbo.unbind()
 
@@ -85,6 +78,7 @@ class DynObj(VisObj):
         self.rotation[0,1] = self.body.transform.R.col2.x
         self.rotation[1,0] = np.sin(trafo.R.angle)
         self.rotation[1,1] = self.body.transform.R.col2.y
+#        print self.body.transform.R.angle
 
 #        print self.rotation[:2,:2]
         # Very strange. This should not be empty like that. Possibly a bug?
@@ -92,7 +86,7 @@ class DynObj(VisObj):
 #        print self.body.transform.R.col2
 
         prog.setUniform('mat_ModelView',
-                        np.dot(self.translation,self.rotation))
+                        np.dot(self.translation, self.rotation))
         super(DynObj, self).draw(prog)
 #-------------------------------------------------------------------------------
 class SensorObj(DynObj):

@@ -42,17 +42,17 @@ class Renderer(object):
 
     def projMatrix(self,left,right,top,bottom,near,far):
         mat = np.identity(4, 'f')
-        mat[0,0] = 2./(right-left)
-        mat[0,3] = - (right+left) / (right-left)
-        mat[1,1] = 2./(top-bottom)
-        mat[1,3] = -(top+bottom)/(top-bottom)
-        mat[2,2] = -2 / (far - near)
-        mat[2,3] = - (far+near)/ (far - near)
+        mat[0,0] = 2./float(right-left)
+        mat[0,3] = - float(right+left) / float(right-left)
+        mat[1,1] = 2./float(top-bottom)
+        mat[1,3] = -float(top+bottom)/float(top-bottom)
+        mat[2,2] = -2 / float(far - near)
+        mat[2,3] = - float(far+near)/ float(far - near)
         mat[3,3] = 1.
         return mat
 
     def setProjection(self, width, height):
-        self.matProj = self.projMatrix(0,width, 0,height, -1,1)
+        self.matProj = self.projMatrix(0,float(width), 0,float(height), -1.,1.)
 
     def initVisuals(self, cfg, staticObjects, dynamicObjects, agents):
         """ Because we want to completely decouple the visualization
@@ -94,8 +94,8 @@ class Renderer(object):
         # Set Projection Matrix
         if self.worldView == 0 and userController != None:
             pos = userController.agent.body.transform.position
-            self.projTrans[0,3] = pos[0]
-            self.projTrans[0,1] = pos[1]
+            self.projTrans[0,3] = float(pos[0])
+            self.projTrans[0,1] = float(pos[1])
             R = userController.agent.body.transform.R
             self.projRot[0,0] = R.col1.x
             self.projRot[1,0] = R.col1.y

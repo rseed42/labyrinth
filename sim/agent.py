@@ -262,9 +262,9 @@ class Agent(object):
         desiredAngle = 0
 
         if self.controlState & WDC_LEFT:
-            desiredAngle = lockAngle
-        elif self.controlState & WDC_RIGHT:
             desiredAngle = -lockAngle
+        elif self.controlState & WDC_RIGHT:
+            desiredAngle = lockAngle
         angleToTurn = desiredAngle - self.flJoint.angle
         # Some problem with the API, therefore workaround:
         angleToTurn = b2.b2Clamp((angleToTurn,0),
