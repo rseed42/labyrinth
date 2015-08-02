@@ -113,16 +113,7 @@ class Agent(object):
     def __init__(self, name):
         self.name = name
         # Control variables
-#        self.max_engine_speed = 0
-#        self.reverse_engine_speed = 0
-#        self.reverse_engine_acc_step = 0
-#        self.acceleration_step = 0
-#        self.engineSpeed = 0
-#        self.steering_speed = 0
-#        self.max_steer_angle = 0
-#        self.steer_angle_step = 0
-#        self.steeringAngle = 0
-#        # Bodies
+        # Bodies
         self.body = None
         self.frontLeftWheel = Wheel()
         self.frontRightWheel = Wheel()
@@ -170,15 +161,6 @@ class Agent(object):
 #        self.sensor = self.body.CreateFixture(sensorFixtureDef)
 
     def construct(self, world, cfg):
-        # Initialize the control variables
-        pass
-#        self.max_engine_speed = cfg.max_engine_speed
-#        self.max_steer_angle = (b2.b2_pi/180)*cfg.max_steer_angle
-#        self.steering_speed = cfg.steering_speed
-#        self.acceleration_step = cfg.acceleration_step
-#        self.reverse_engine_max_speed = cfg.reverse_engine_max_speed
-#        self.reverse_engine_acc_step = cfg.reverse_engine_acc_step
-#        self.steer_angle_step = cfg.steer_angle_step
         # Agent body
         bodyDef = b2.b2BodyDef()
         bodyDef.type = b2.b2_dynamicBody
@@ -186,7 +168,7 @@ class Agent(object):
         bodyDef.angularDamping = cfg.angularDamping
         bodyDef.position = cfg.position
         self.body = world.CreateBody(bodyDef)
-#        self.body.userData = self
+        self.body.userData = self
         verts = ((1.5,0.0),
                  (3.0,2.5),
                  (2.8,5.5),
@@ -196,21 +178,11 @@ class Agent(object):
                  (-3.0,2.5),
                  (-1.5,0.0)
         )
-        carShape = b2.b2PolygonShape()
-        carShape.vertices = verts
-        carShape.vertexCount = len(verts)
-#        fixture = self.body.CreateFixture(carShape, 0.1)
-        fx = self.body.CreatePolygonFixture(shape=carShape,
+        self.body.CreatePolygonFixture(vertices=verts,
                                        friction=cfg.friction,
                                        density=cfg.density,
                                        restitution=cfg.restitution
-       )
-
-#        fx = self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
-#                                       friction=cfg.friction,
-#                                       density=cfg.density,
-#                                       restitution=cfg.restitution
-#        )
+        )
         self.flJoint = self.addWheel(self.frontLeftWheel,
                       world,
                       self.body,
@@ -236,20 +208,6 @@ class Agent(object):
                       cfg.wheels.rearRight
         )
 
-
-#        self.frontLeftWheel = self.addFrontWheel(world, self.body,
-#                                                 cfg.position,
-#                                                 cfg.wheels.frontLeft)
-#        self.frontRightWheel = self.addFrontWheel(world, self.body,
-#                                                  cfg.position,
-#                                                  cfg.wheels.frontRight)
-#
-#        self.rearLeftWheel = self.addRearWheel(world, self.body,
-#                                                  cfg.position,
-#                                                  cfg.wheels.rearLeft)
-#        self.rearRightWheel = self.addRearWheel(world, self.body,
-#                                                  cfg.position,
-#                                                  cfg.wheels.rearRight)
 #        # Create Sensor
 #        self.addSensor(world, cfg.sensor)
 #        # Create the mind or remain mindless
@@ -297,8 +255,6 @@ class Agent(object):
         for wheel in self.wheels:
             wheel.updateFriction()
             wheel.updateDrive(self.controlState)
-
-
 
         lockAngle = 35*DEGTORAD
         turnSpeedPerSec = 160 * DEGTORAD
