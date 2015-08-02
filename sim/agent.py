@@ -31,17 +31,8 @@ class Wheel(object):
         bodyDef.type = b2.b2_dynamicBody
         bodyDef.position = b2.b2Vec2(carPos) + b2.b2Vec2(cfg.position)
         self.body = world.CreateBody(bodyDef)
-#        polygonShape = b2.b2PolygonShape()
-#        polygonShape.SetAsBox(0.5,1.25)
-        fx = self.body.CreatePolygonFixture(box=(0.5, 1.25), density=1)
-        # Density = 1
-#        self.body.CreateFixture(polygonShape, 1)
-
-#    def setCharacteristics(self, forward, back, drive):
-#        self.maxForwardSpeed = forward
-#        self.maxBackwardSpeed = back
-#        self.maxDriveForce = drive
-
+        fx = self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+                                            density=cfg.density)
     def getLateralVelocity(self):
         currentRightNormal = self.body.GetWorldVector((1,0))
         return b2.b2Dot(currentRightNormal, self.body.linearVelocity) * currentRightNormal
@@ -66,17 +57,10 @@ class Wheel(object):
         self.body.ApplyForce(dragForceMagnitude * currentForwardNormal,
                              self.body.worldCenter, True)
 
-#    def updateDrive(self, controlState):
     def updateDrive(self, controlState):
-#        print bin(controlState)
-#        return
         desiredSpeed = 0
-#        print bin(self.controlState)
-#        return
         if controlState & WDC_UP: desiredSpeed = self.maxForwardSpeed
         if controlState & WDC_DOWN: desiredSpeed = self.maxBackwardSpeed
-#        else: return
-#        print desiredSpeed
         # Current speed in forward direction
         currentForwardNormal = self.body.GetWorldVector((0,1))
         currentSpeed = b2.b2Dot(self.getForwardVelocity(), currentForwardNormal)
@@ -91,20 +75,6 @@ class Wheel(object):
         self.body.ApplyForce(force*currentForwardNormal,
                              self.body.worldCenter,
                              True)
-
-#    def updateTurn(self, controlState):
-    def updateTurn(self, controlState):
-        desiredTorque = 0
-#        print self.controlState
-#        return
-        if controlState & (WDC_LEFT|WDC_RIGHT):
-            if controlState & WDC_LEFT:
-                desiredTorque = 15
-            elif controlState & WDC_RIGHT:
-                desiredTorque = -15
-            else:
-                pass
-        self.body.ApplyTorque(desiredTorque, True)
 
 #-------------------------------------------------------------------------------
 # Agent
@@ -123,11 +93,11 @@ class Agent(object):
                        self.rearLeftWheel,  self.rearRightWheel)
         self.flJoint = None
         self.frJoint = None
-#        # Sensors
-#        self.sensor = None
-#        self.fov = None
-#        self.sensorField = {}
-#        self.frameNum = 0
+        # Sensors
+        self.sensor = None
+        self.fov = None
+        self.sensorField = {}
+        self.frameNum = 0
         # Mind
         self.mind = None
         self.controlState = 0x0
@@ -145,20 +115,20 @@ class Agent(object):
         jointDef.localAnchorA.Set(*cfg.anchor)
         return world.CreateJoint(jointDef)
 
-#    def addSensor(self, world, cfg):
-#        sensorFov = b2.b2PolygonShape()
-#        # Define sensor shape
-#        w, h = cfg.fov.width, cfg.fov.height
-#        self.fov = (w,h)
-#        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
-#                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
-#        # Move sensor relative to the body
-#        relpos = np.array([cfg.relpos.x, cfg.relpos.y])
-#        sensorFov.vertices = (fov+relpos).tolist()
-#        sensorFixtureDef = b2.b2FixtureDef()
-#        sensorFixtureDef.isSensor = True
-#        sensorFixtureDef.shape = sensorFov
-#        self.sensor = self.body.CreateFixture(sensorFixtureDef)
+    def addSensor(self, world, cfg):
+        sensorFov = b2.b2PolygonShape()
+        # Define sensor shape
+        w, h = cfg.fov.width, cfg.fov.height
+        self.fov = (w,h)
+        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
+                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
+        # Move sensor relative to the body
+        relpos = np.array([cfg.relpos.x, cfg.relpos.y])
+        sensorFov.vertices = (fov+relpos).tolist()
+        sensorFixtureDef = b2.b2FixtureDef()
+        sensorFixtureDef.isSensor = True
+        sensorFixtureDef.shape = sensorFov
+        self.sensor = self.body.CreateFixture(sensorFixtureDef)
 
     def construct(self, world, cfg):
         # Agent body
@@ -208,12 +178,12 @@ class Agent(object):
                       cfg.wheels.rearRight
         )
 
-#        # Create Sensor
-#        self.addSensor(world, cfg.sensor)
-#        # Create the mind or remain mindless
-#        if not cfg.mind: return
-#        self.mind = programed.MindProgram()
-#        self.mind.configure(cfg.mind, self)
+        # Create Sensor
+        self.addSensor(world, cfg.sensor)
+        # Create the mind or remain mindless
+        if not cfg.mind: return
+        self.mind = programed.MindProgram()
+        self.mind.configure(cfg.mind, self)
 
 #    def accelerate(self):
 #        if self.engineSpeed < self.max_engine_speed:
