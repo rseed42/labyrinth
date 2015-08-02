@@ -9,6 +9,10 @@ WDC_LEFT  = 0x1
 WDC_RIGHT = 0x2
 WDC_UP    = 0x4
 WDC_DOWN  = 0x8
+DEGTORAD = 0.0174532925199432957
+RADTODEG = 57.295779513082320876
+#-------------------------------------------------------------------------------
+# Wheel
 #-------------------------------------------------------------------------------
 class Wheel(object):
     def __init__(self):
@@ -16,11 +20,16 @@ class Wheel(object):
         self.maxForwardSpeed = 0
         self.maxBackwardSpeed = 0
         self.maxDriveForce = 0
+        self.maxLateralImpulse = 0
 
-    def create(self, world):
+    def create(self, world, carBody, carPos, cfg):
+        self.maxForwardSpeed = cfg.maxForwardSpeed
+        self.maxBackwardSpeed = cfg.maxBackwardSpeed
+        self.maxDriveForce = cfg.maxDriveForce
+        self.maxLateralImpulse = cfg.maxLateralImpulse
         bodyDef = b2.b2BodyDef()
         bodyDef.type = b2.b2_dynamicBody
-        bodyDef.position = (22,20)
+        bodyDef.position = b2.b2Vec2(carPos) + b2.b2Vec2(cfg.position)
         self.body = world.CreateBody(bodyDef)
 #        polygonShape = b2.b2PolygonShape()
 #        polygonShape.SetAsBox(0.5,1.25)
@@ -28,10 +37,10 @@ class Wheel(object):
         # Density = 1
 #        self.body.CreateFixture(polygonShape, 1)
 
-    def setCharacteristics(self, forward, back, drive):
-        self.maxForwardSpeed = forward
-        self.maxBackwardSpeed = back
-        self.maxDriveForce = drive
+#    def setCharacteristics(self, forward, back, drive):
+#        self.maxForwardSpeed = forward
+#        self.maxBackwardSpeed = back
+#        self.maxDriveForce = drive
 
     def getLateralVelocity(self):
         currentRightNormal = self.body.GetWorldVector((1,0))
@@ -67,7 +76,7 @@ class Wheel(object):
         if controlState & WDC_UP: desiredSpeed = self.maxForwardSpeed
         if controlState & WDC_DOWN: desiredSpeed = self.maxBackwardSpeed
 #        else: return
-        print desiredSpeed
+#        print desiredSpeed
         # Current speed in forward direction
         currentForwardNormal = self.body.GetWorldVector((0,1))
         currentSpeed = b2.b2Dot(self.getForwardVelocity(), currentForwardNormal)
@@ -104,93 +113,72 @@ class Agent(object):
     def __init__(self, name):
         self.name = name
         # Control variables
-        self.max_engine_speed = 0
-        self.reverse_engine_speed = 0
-        self.reverse_engine_acc_step = 0
-        self.acceleration_step = 0
-        self.engineSpeed = 0
-        self.steering_speed = 0
-        self.max_steer_angle = 0
-        self.steer_angle_step = 0
-        self.steeringAngle = 0
-        # Bodies
+#        self.max_engine_speed = 0
+#        self.reverse_engine_speed = 0
+#        self.reverse_engine_acc_step = 0
+#        self.acceleration_step = 0
+#        self.engineSpeed = 0
+#        self.steering_speed = 0
+#        self.max_steer_angle = 0
+#        self.steer_angle_step = 0
+#        self.steeringAngle = 0
+#        # Bodies
         self.body = None
-        self.frontLeftWheel = None
-        self.frontRightWheel = None
-        self.rearLeftWheel = None
-        self.rearRightWheel = None
-        # Sensors
-        self.sensor = None
-        self.fov = None
-        self.sensorField = {}
-        self.frameNum = 0
+        self.frontLeftWheel = Wheel()
+        self.frontRightWheel = Wheel()
+        self.rearLeftWheel = Wheel()
+        self.rearRightWheel = Wheel()
+        self.wheels = (self.frontLeftWheel, self.frontRightWheel,
+                       self.rearLeftWheel,  self.rearRightWheel)
+        self.flJoint = None
+        self.frJoint = None
+#        # Sensors
+#        self.sensor = None
+#        self.fov = None
+#        self.sensorField = {}
+#        self.frameNum = 0
         # Mind
         self.mind = None
-
         self.controlState = 0x0
 
-        self.wheel = Wheel()
-
-    def addWheel(self, world, carBody, carPos, cfg):
-        wheelDef = b2.b2BodyDef()
-        wheelDef.type = b2.b2_dynamicBody
-        wheelDef.position = b2.b2Vec2(carPos) + b2.b2Vec2(cfg.position)
-        wheel = world.CreateBody(wheelDef)
-        # For collision detection, the wheel is part of the car:
-        wheel.userData = self
-        fx = wheel.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
-                                       friction=cfg.friction,
-                                       density=cfg.density,
-                                       restitution=cfg.restitution
-        )
-        return wheel
-
-    def addFrontWheel(self, world, carBody, carPos, cfg):
-        wheel = self.addWheel(world, carBody, carPos, cfg)
-#        jointDef = b2.b2RevoluteJointDef()
-#        jointDef.Initialize(carBody, wheel, wheel.worldCenter)
-#        jointDef.enableMotor = True
-#        jointDef.maxMotorTorque = cfg.max_motor_torque
-#        joint = world.CreateJoint(jointDef)
-        return wheel
-
-    def addRearWheel(self, world, carBody, carPos, cfg):
-        wheel = self.addWheel(world, carBody, carPos, cfg)
-        jointDef = b2.b2PrismaticJointDef()
-        jointDef.Initialize(self.body,
-                            wheel,
-                            wheel.worldCenter,
-                            b2.b2Vec2(1,0))
+    def addWheel(self, wheel, world, carBody, carPos, cfg):
+        wheel.create(world, carBody, carPos, cfg)
+        jointDef = b2.b2RevoluteJointDef()
+        jointDef.bodyA = self.body
         jointDef.enableLimit = True
-        jointDef.lowerTranslation = 0
-        joint = world.CreateJoint(jointDef)
-        return wheel
+        jointDef.lowerAngle = 0
+        jointDef.upperAngle = 0
+        # Center of wheel
+        jointDef.localAnchorB.SetZero()
+        jointDef.bodyB = wheel.body
+        jointDef.localAnchorA.Set(*cfg.anchor)
+        return world.CreateJoint(jointDef)
 
-    def addSensor(self, world, cfg):
-        sensorFov = b2.b2PolygonShape()
-        # Define sensor shape
-        w, h = cfg.fov.width, cfg.fov.height
-        self.fov = (w,h)
-        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
-                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
-        # Move sensor relative to the body
-        relpos = np.array([cfg.relpos.x, cfg.relpos.y])
-        sensorFov.vertices = (fov+relpos).tolist()
-        sensorFixtureDef = b2.b2FixtureDef()
-        sensorFixtureDef.isSensor = True
-        sensorFixtureDef.shape = sensorFov
-        self.sensor = self.body.CreateFixture(sensorFixtureDef)
+#    def addSensor(self, world, cfg):
+#        sensorFov = b2.b2PolygonShape()
+#        # Define sensor shape
+#        w, h = cfg.fov.width, cfg.fov.height
+#        self.fov = (w,h)
+#        fov = np.array([(-0.5*w,-0.5*h),(0.5*w,-0.5*h),
+#                        (0.5*w,0.5*h),(-0.5*w, 0.5*h)])
+#        # Move sensor relative to the body
+#        relpos = np.array([cfg.relpos.x, cfg.relpos.y])
+#        sensorFov.vertices = (fov+relpos).tolist()
+#        sensorFixtureDef = b2.b2FixtureDef()
+#        sensorFixtureDef.isSensor = True
+#        sensorFixtureDef.shape = sensorFov
+#        self.sensor = self.body.CreateFixture(sensorFixtureDef)
 
     def construct(self, world, cfg):
         # Initialize the control variables
         pass
-        self.max_engine_speed = cfg.max_engine_speed
-        self.max_steer_angle = (b2.b2_pi/180)*cfg.max_steer_angle
-        self.steering_speed = cfg.steering_speed
-        self.acceleration_step = cfg.acceleration_step
-        self.reverse_engine_max_speed = cfg.reverse_engine_max_speed
-        self.reverse_engine_acc_step = cfg.reverse_engine_acc_step
-        self.steer_angle_step = cfg.steer_angle_step
+#        self.max_engine_speed = cfg.max_engine_speed
+#        self.max_steer_angle = (b2.b2_pi/180)*cfg.max_steer_angle
+#        self.steering_speed = cfg.steering_speed
+#        self.acceleration_step = cfg.acceleration_step
+#        self.reverse_engine_max_speed = cfg.reverse_engine_max_speed
+#        self.reverse_engine_acc_step = cfg.reverse_engine_acc_step
+#        self.steer_angle_step = cfg.steer_angle_step
         # Agent body
         bodyDef = b2.b2BodyDef()
         bodyDef.type = b2.b2_dynamicBody
@@ -198,120 +186,139 @@ class Agent(object):
         bodyDef.angularDamping = cfg.angularDamping
         bodyDef.position = cfg.position
         self.body = world.CreateBody(bodyDef)
-        self.body.userData = self
-        fx = self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+#        self.body.userData = self
+        verts = ((1.5,0.0),
+                 (3.0,2.5),
+                 (2.8,5.5),
+                 (1.0,10.0),
+                 (-1.0,10.0),
+                 (-2.8,5.5),
+                 (-3.0,2.5),
+                 (-1.5,0.0)
+        )
+        carShape = b2.b2PolygonShape()
+        carShape.vertices = verts
+        carShape.vertexCount = len(verts)
+#        fixture = self.body.CreateFixture(carShape, 0.1)
+        fx = self.body.CreatePolygonFixture(shape=carShape,
                                        friction=cfg.friction,
                                        density=cfg.density,
                                        restitution=cfg.restitution
+       )
+
+#        fx = self.body.CreatePolygonFixture(box=(cfg.size.width, cfg.size.height),
+#                                       friction=cfg.friction,
+#                                       density=cfg.density,
+#                                       restitution=cfg.restitution
+#        )
+        self.flJoint = self.addWheel(self.frontLeftWheel,
+                      world,
+                      self.body,
+                      cfg.position,
+                      cfg.wheels.frontLeft
         )
-        self.frontLeftWheel = self.addFrontWheel(world, self.body,
-                                                 cfg.position,
-                                                 cfg.wheels.frontLeft)
-        self.frontRightWheel = self.addFrontWheel(world, self.body,
-                                                  cfg.position,
-                                                  cfg.wheels.frontRight)
+        self.frJoint = self.addWheel(self.frontRightWheel,
+                      world,
+                      self.body,
+                      cfg.position,
+                      cfg.wheels.frontRight
+        )
+        self.addWheel(self.rearLeftWheel,
+                      world,
+                      self.body,
+                      cfg.position,
+                      cfg.wheels.rearLeft
+        )
+        self.addWheel(self.rearRightWheel,
+                      world,
+                      self.body,
+                      cfg.position,
+                      cfg.wheels.rearRight
+        )
 
-        self.rearLeftWheel = self.addRearWheel(world, self.body,
-                                                  cfg.position,
-                                                  cfg.wheels.rearLeft)
-        self.rearRightWheel = self.addRearWheel(world, self.body,
-                                                  cfg.position,
-                                                  cfg.wheels.rearRight)
-        # Wheel
-        self.wheel.create(world)
-        self.wheel.setCharacteristics(100, -20, 150)
-        self.frontLeftWheel = self.wheel.body
-        # Create Sensor
-        self.addSensor(world, cfg.sensor)
-        # Create the mind or remain mindless
-        if not cfg.mind: return
-        self.mind = programed.MindProgram()
-        self.mind.configure(cfg.mind, self)
 
-    def accelerate(self):
-        if self.engineSpeed < self.max_engine_speed:
-            self.engineSpeed += self.acceleration_step
+#        self.frontLeftWheel = self.addFrontWheel(world, self.body,
+#                                                 cfg.position,
+#                                                 cfg.wheels.frontLeft)
+#        self.frontRightWheel = self.addFrontWheel(world, self.body,
+#                                                  cfg.position,
+#                                                  cfg.wheels.frontRight)
+#
+#        self.rearLeftWheel = self.addRearWheel(world, self.body,
+#                                                  cfg.position,
+#                                                  cfg.wheels.rearLeft)
+#        self.rearRightWheel = self.addRearWheel(world, self.body,
+#                                                  cfg.position,
+#                                                  cfg.wheels.rearRight)
+#        # Create Sensor
+#        self.addSensor(world, cfg.sensor)
+#        # Create the mind or remain mindless
+#        if not cfg.mind: return
+#        self.mind = programed.MindProgram()
+#        self.mind.configure(cfg.mind, self)
 
-    def releaseAccelerator(self):
-        self.engineSpeed = 0
-
-    def reverse(self):
-        if self.engineSpeed < self.reverse_engine_max_speed:
-#            print 'reverse'
-            self.engineSpeed -= self.reverse_engine_acc_step
-
-    def releaseReverse(self):
-        self.engineSpeed = 0
-
-    def brake(self):
-        pass
-        #print "brake"
-
-    def releaseBrake(self):
-        pass
-        #print "releaseBrake"
-
-    def steerLeft(self):
-        self.steeringAngle = -self.max_steer_angle
-
-    def steerRight(self):
-        self.steeringAngle = self.max_steer_angle
-
-    def releaseSteering(self):
-        self.steeringAngle = 0
-
-    def killOrthogonalVelocity(self, body):
-        """ This function applies a "friction" in a direction orthogonal to the
-            body's axis. """
-#        localPoint = b2.b2Vec2(0,0)
-#        velocity = body.GetLinearVelocityFromLocalPoint(localPoint)
-#        sidewaysAxis = body.transform.R.col2
-#        sidewaysAxis *= b2.b2Dot(velocity, sidewaysAxis)
-#        body.linearVelocity = sidewaysAxis
-
+#    def accelerate(self):
+#        if self.engineSpeed < self.max_engine_speed:
+#            self.engineSpeed += self.acceleration_step
+#
+#    def releaseAccelerator(self):
+#        self.engineSpeed = 0
+#
+#    def reverse(self):
+#        if self.engineSpeed < self.reverse_engine_max_speed:
+##            print 'reverse'
+#            self.engineSpeed -= self.reverse_engine_acc_step
+#
+#    def releaseReverse(self):
+#        self.engineSpeed = 0
+#
+#    def brake(self):
+#        pass
+#        #print "brake"
+#
+#    def releaseBrake(self):
+#        pass
+#        #print "releaseBrake"
+#
+#    def steerLeft(self):
+#        self.steeringAngle = -self.max_steer_angle
+#
+#    def steerRight(self):
+#        self.steeringAngle = self.max_steer_angle
+#
+#    def releaseSteering(self):
+#        self.steeringAngle = 0
+#
 
     def update(self):
         # Decision-making time
         if self.mind: self.mind.think()
         # Put our actions into physics
-        self.wheel.updateFriction()
-        self.wheel.updateDrive(self.controlState)
-        self.wheel.updateTurn(self.controlState)
-
-#        body = self.frontLeftWheel
-#        currentRightNormal = body.GetWorldVector((1,0))
-#        lateralVelocity = b2.b2Dot(currentRightNormal, body.linearVelocity) * currentRightNormal
-
-#        currentForwardNormal = body.GetWorldVector((0,1))
-#        forwardVelocity = b2.b2Dot(currentForwardNormal, body.linearVelocity) * currentForwardNormal
-
-#        impulse = body.mass * -lateralVelocity
-#        body.ApplyLinearImpulse(impulse, body.worldCenter,True)
-#        body.ApplyAngularImpulse(0.1*body.inertia*-body.angularVelocity,True)
-#        forwardSpeed = forwardVelocity.Normalize()
-#        dragForceMagnitude = -2 * forwardSpeed
-#        body.ApplyForce(dragForceMagnitude*currentForwardNormal, body.worldCenter, True)
+        for wheel in self.wheels:
+            wheel.updateFriction()
+            wheel.updateDrive(self.controlState)
 
 
-#        self.killOrthogonalVelocity(self.frontLeftWheel)
-#        self.killOrthogonalVelocity(self.frontRightWheel)
-#        self.killOrthogonalVelocity(self.rearLeftWheel)
-#        self.killOrthogonalVelocity(self.rearRightWheel)
-       # Driving
-#        lforce = self.frontLeftWheel.transform.R.col2 * self.engineSpeed
-#        self.frontLeftWheel.ApplyForceToCenter(lforce, True)
-#        rforce = self.frontRightWheel.transform.R.col2 * self.engineSpeed
-#        self.frontRightWheel.ApplyForceToCenter(rforce, True)
-#        # Steering
+
+        lockAngle = 35*DEGTORAD
+        turnSpeedPerSec = 160 * DEGTORAD
+        turnPerTimeStep = turnSpeedPerSec / 60.0
+        desiredAngle = 0
+
+        if self.controlState & WDC_LEFT:
+            desiredAngle = lockAngle
+        elif self.controlState & WDC_RIGHT:
+            desiredAngle = -lockAngle
+        angleToTurn = desiredAngle - self.flJoint.angle
+        # Some problem with the API, therefore workaround:
+        angleToTurn = b2.b2Clamp((angleToTurn,0),
+                                 (-turnPerTimeStep,0),
+                                 (turnPerTimeStep,0)).x
+        newAngle = self.flJoint.angle + angleToTurn
+        self.flJoint.limits = (newAngle, newAngle)
+        self.frJoint.limits = (newAngle, newAngle)
 
 
-#        lj = self.frontLeftWheel.joints[0].joint
-#        mspeed = self.steeringAngle - lj.angle
-#        lj.motorSpeed = mspeed * self.steering_speed
-#
-#        rj = self.frontRightWheel.joints[0].joint
-#        mspeed = self.steeringAngle - rj.angle
-#        rj.motorSpeed = mspeed * self.steering_speed
 
     def handleCollisionBegin(self, contact, fixtureMe, fixtureOther):
         """ Collision events that do not come from the sensor,

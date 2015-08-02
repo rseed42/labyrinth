@@ -68,6 +68,7 @@ class DynObj(VisObj):
     def setVertices(self, vertices):
         """ vertices must define an (N,3) array with float32 types
         """
+        self.vertices = vertices
         self.vbo = vbo.VBO(vertices)
 
     def draw(self, prog):
