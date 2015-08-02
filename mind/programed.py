@@ -26,6 +26,7 @@ class MindProgram(mind.Mind):
 
     def think(self):
         pass
+        self.actions['acc']()
         # Calculate the average distance, relative to the current pos:
 #        pos = np.array(self.agent.body.transform.position, 'f')
 #        if self.time > self.memory.shape[0]:
