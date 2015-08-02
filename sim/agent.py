@@ -185,38 +185,35 @@ class Agent(object):
         self.mind = programed.MindProgram()
         self.mind.configure(cfg.mind, self)
 
-#    def accelerate(self):
-#        if self.engineSpeed < self.max_engine_speed:
-#            self.engineSpeed += self.acceleration_step
-#
-#    def releaseAccelerator(self):
-#        self.engineSpeed = 0
-#
-#    def reverse(self):
-#        if self.engineSpeed < self.reverse_engine_max_speed:
-##            print 'reverse'
-#            self.engineSpeed -= self.reverse_engine_acc_step
-#
-#    def releaseReverse(self):
-#        self.engineSpeed = 0
-#
-#    def brake(self):
-#        pass
-#        #print "brake"
-#
-#    def releaseBrake(self):
-#        pass
-#        #print "releaseBrake"
-#
-#    def steerLeft(self):
-#        self.steeringAngle = -self.max_steer_angle
-#
-#    def steerRight(self):
-#        self.steeringAngle = self.max_steer_angle
-#
-#    def releaseSteering(self):
-#        self.steeringAngle = 0
-#
+    def accelerate(self):
+        self.controlState |= WDC_UP
+
+    def releaseAccelerator(self):
+        self.controlState &= ~WDC_UP
+
+    def reverse(self):
+        self.controlState |= WDC_DOWN
+
+    def releaseReverse(self):
+        self.controlState &= ~WDC_DOWN
+
+    def steerLeft(self):
+        self.controlState |= WDC_LEFT
+
+    def releaseLeft(self):
+        self.controlState &= ~WDC_LEFT
+
+    def steerRight(self):
+        self.controlState |= WDC_RIGHT
+
+    def releaseRight(self):
+        self.controlState &= ~WDC_RIGHT
+
+    def brake(self):
+        pass
+
+    def releaseBrake(self):
+        pass
 
     def update(self):
         # Decision-making time

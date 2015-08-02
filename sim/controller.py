@@ -16,20 +16,28 @@ class UserController(object):
 
     def keyDown(self, sb):
         if   sb == sdl.SDLK_a:
-            self.agent.controlState |= WDC_LEFT
+            self.agent.steerLeft()
+#            self.agent.controlState |= WDC_LEFT
         elif sb == sdl.SDLK_d:
-            self.agent.controlState |= WDC_RIGHT
+            self.agent.steerRight()
+#            self.agent.controlState |= WDC_RIGHT
         elif sb == sdl.SDLK_w:
-            self.agent.controlState |= WDC_UP
+            self.agent.accelerate()
+#            self.agent.controlState |= WDC_UP
         elif sb == sdl.SDLK_s:
-            self.agent.controlState |= WDC_DOWN
+            self.agent.reverse()
+#            self.agent.controlState |= WDC_DOWN
 
     def keyUp(self, sb):
         if   sb == sdl.SDLK_a:
-            self.agent.controlState &= ~WDC_LEFT
+            self.agent.releaseLeft()
+#            self.agent.controlState &= ~WDC_LEFT
         elif sb == sdl.SDLK_d:
-            self.agent.controlState &= ~WDC_RIGHT
+            self.agent.releaseRight()
+#            self.agent.controlState &= ~WDC_RIGHT
         elif sb == sdl.SDLK_w:
-            self.agent.controlState &= ~WDC_UP
+            self.agent.releaseAccelerator()
+#            self.agent.controlState &= ~WDC_UP
         elif sb == sdl.SDLK_s:
-            self.agent.controlState &= ~WDC_DOWN
+            self.agent.releaseReverse()
+#            self.agent.controlState &= ~WDC_DOWN
