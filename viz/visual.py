@@ -75,9 +75,13 @@ class DynObj(VisObj):
 
         # Possible b2 bug
         self.rotation[0,0] = np.cos(trafo.R.angle)
-        self.rotation[0,1] = self.body.transform.R.col2.x
+        # self.rotation[0,1] = self.body.transform.R.col2.x
+        self.rotation[0,1] = -self.body.transform.R.s
         self.rotation[1,0] = np.sin(trafo.R.angle)
-        self.rotation[1,1] = self.body.transform.R.col2.y
+        # self.rotation[1,1] = self.body.transform.R.col2.y
+        self.rotation[1,1] = self.body.transform.R.c
+
+
 #        print self.body.transform.R.angle
 
 #        print self.rotation[:2,:2]
