@@ -3,7 +3,7 @@
                 "title": "Interactive Visualization",
                 "bgColor" : [0,0,0,0]
     },
-    "fps": 58,
+    "fps": 60,
     "runSimulationAtStart" : 1,
     "worldView": 1,
     "shaderDir" : "viz/shader/",
